@@ -35,7 +35,7 @@ git clone https://github.com/Dimas391/Banda-Aceh-CCTV-Monitoring-System.git
 ### 2 Masuk ke Dalam Direktori 
 Masuk ke dalam direktori Banda-aceh-CCTV-Monitoring-System
 ```bash
-cd repository-name
+cd Banda-Aceh-CCTV-Monitoring-System
 ```
 
 ### 2. Instalasi Dependencies
