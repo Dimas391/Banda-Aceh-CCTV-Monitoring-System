@@ -43,4 +43,9 @@ Sebelum menjalankan aplikasi ini, pastikan Anda sudah menginstal:
 ### 1. Clone Repository
 ```bash
 git clone https://github.com/username/repository-name.git
-cd repository-name
+cd repository-name ```
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/username/repository-name.git
+cd repository-name ```
