@@ -30,8 +30,14 @@ Sebelum menjalankan aplikasi ini, pastikan Anda sudah menginstal:
 Clone repository ini ke mesin lokal Anda menggunakan perintah berikut:
 ```bash
 git clone https://github.com/Dimas391/Banda-Aceh-CCTV-Monitoring-System.git
+```
+
+### 2 Masuk ke Dalam Direktori 
+Masuk ke dalam direktori Banda-aceh-CCTV-Monitoring-System
+```bash
 cd repository-name
 ```
+
 ### 2. Instalasi Dependencies
 Setelah clone repository, instal dependensi yang diperlukan dengan menjalankan
 ```bash
