@@ -26,8 +26,6 @@ Sebelum menjalankan aplikasi ini, pastikan Anda sudah menginstal:
 1. [Node.js](https://nodejs.org/) (termasuk `npm` atau `yarn`)
 2. [MongoDB](https://www.mongodb.com/try/download/community)
 
-## Cara Menjalankan Aplikasi
-
 ### 1. Clone Repository
 Clone repository ini ke mesin lokal Anda menggunakan perintah berikut:
 ```bash
