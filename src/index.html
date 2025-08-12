@@ -11,7 +11,7 @@
     <!-- HLS.js for video streaming -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
     <style>
-        * {
+     * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -958,9 +958,10 @@ body::before {
     background: linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%);
 }
 
-/* RESPONSIVE DESIGN - MOBILE FIXES */
-/* Mobile Large (640px - 767px) */
-@media (max-width: 767px) {
+/* MOBILE RESPONSIVE FIXES - COMPLETELY REDESIGNED */
+
+/* Mobile Large (768px and below) - Primary mobile breakpoint */
+@media (max-width: 768px) {
     body {
         overflow: auto;
         height: auto;
@@ -980,117 +981,117 @@ body::before {
         border-right: none;
         border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         flex-shrink: 0;
+        max-height: 45vh;
+        overflow-y: auto;
     }
     
     .header {
-        padding: 18px 16px;
+        padding: 16px;
     }
     
     .header h1 {
-        font-size: 1.4rem;
-        margin-bottom: 5px;
+        font-size: 1.3rem;
+        margin-bottom: 4px;
     }
     
     .header .subtitle {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
     }
     
     .search-container,
     .auth-container {
-        padding: 16px;
+        padding: 12px;
     }
     
     .search-box {
         gap: 8px;
-        flex-wrap: wrap;
+        flex-direction: column;
     }
     
-    .search-input {
-        padding: 12px 16px;
-        font-size: 14px;
-        border-radius: 40px;
-        min-width: 0;
-        flex: 1;
-    }
-    
+    .search-input,
     .search-btn,
     .filter-btn {
+        width: 100%;
         padding: 12px 16px;
         font-size: 14px;
-        border-radius: 40px;
-        white-space: nowrap;
-        flex-shrink: 0;
+        border-radius: 25px;
     }
     
     .auth-buttons {
         gap: 8px;
+        flex-direction: column;
     }
     
     .auth-btn {
+        width: 100%;
         padding: 10px 16px;
         font-size: 0.9rem;
         border-radius: 20px;
     }
     
     .cctv-list {
-        padding: 10px;
-        max-height: 40vh;
+        padding: 8px;
+        max-height: 30vh;
         overflow-y: auto;
+        flex: none;
     }
     
     .cctv-item {
         padding: 12px;
         margin-bottom: 8px;
-        border-radius: 14px;
+        border-radius: 12px;
     }
     
     .cctv-name {
-        font-size: 0.9rem;
-        margin-bottom: 5px;
+        font-size: 0.95rem;
+        margin-bottom: 4px;
     }
     
     .cctv-location {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         margin-bottom: 8px;
     }
     
     .cctv-status {
-        padding: 3px 8px;
-        font-size: 0.65rem;
+        padding: 4px 8px;
+        font-size: 0.7rem;
     }
     
     .admin-controls {
         margin-top: 8px;
         gap: 4px;
-        flex-wrap: wrap;
+        flex-direction: column;
     }
     
     .admin-controls button {
-        padding: 5px 8px;
-        font-size: 0.65rem;
-        flex: 1;
-        min-width: calc(50% - 2px);
+        padding: 6px 12px;
+        font-size: 0.7rem;
+        width: 100%;
     }
     
+    /* MAP TAKES FULL SCREEN ON MOBILE */
     .map-container {
-        height: 60vh;
+        height: 55vh;
         min-height: 400px;
+        max-height: 60vh;
         border-radius: 0;
-        flex: none;
+        flex: 1;
         position: relative;
+        order: 2;
     }
     
     #map {
-        width: 100%;
-        height: 100%;
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 0 !important;
     }
     
     .add-cctv-btn {
         top: 10px;
         right: 10px;
-        padding: 8px 12px;
+        padding: 10px 16px;
         font-size: 0.8rem;
-        border-radius: 30px;
+        border-radius: 20px;
     }
     
     .modal {
@@ -1100,10 +1101,12 @@ body::before {
     .modal-content,
     .modal-center .modal-content {
         margin: 0;
-        padding: 20px;
+        padding: 16px;
         border-radius: 16px;
         max-width: none;
-        width: 100%;
+        width: calc(100% - 20px);
+        max-height: 90vh;
+        overflow-y: auto;
     }
     
     .modal h2 {
@@ -1112,39 +1115,38 @@ body::before {
     }
     
     .form-group {
-        margin-bottom: 14px;
+        margin-bottom: 12px;
     }
     
     .form-group label {
-        font-size: 0.8rem;
-        margin-bottom: 5px;
+        font-size: 0.85rem;
+        margin-bottom: 4px;
     }
     
     .form-group input,
     .form-group select {
-        padding: 10px 14px;
+        padding: 12px 16px;
         font-size: 14px;
-        border-radius: 10px;
+        border-radius: 12px;
     }
     
     .form-buttons {
         gap: 8px;
         margin-top: 16px;
-        justify-content: stretch;
         flex-direction: column;
     }
     
     .form-buttons button {
-        flex: 1;
+        width: 100%;
         padding: 12px 16px;
         font-size: 0.9rem;
         border-radius: 10px;
-        width: 100%;
     }
     
     .video-content {
-        width: 98%;
+        width: calc(100% - 20px);
         border-radius: 12px;
+        margin: 10px;
     }
     
     .video-header {
@@ -1161,7 +1163,7 @@ body::before {
     }
     
     #videoPlayer {
-        height: 280px;
+        height: 250px;
     }
     
     .notification {
@@ -1177,6 +1179,8 @@ body::before {
     .loading {
         padding: 20px;
         border-radius: 16px;
+        width: calc(100% - 40px);
+        max-width: 300px;
     }
     
     .loading-spinner {
@@ -1186,74 +1190,99 @@ body::before {
     }
 }
 
-/* Mobile Small (480px - 639px) */
-@media (max-width: 639px) {
-    .search-box {
-        flex-direction: column;
-        gap: 8px;
+/* Mobile Medium (640px and below) */
+@media (max-width: 640px) {
+    .sidebar {
+        max-height: 40vh;
     }
     
-    .search-input {
-        width: 100%;
-        padding: 10px 14px;
-        font-size: 13px;
+    .map-container {
+        height: 60vh;
+        max-height: none;
+        min-height: 350px;
     }
     
+    .header {
+        padding: 12px;
+    }
+    
+    .header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .header .subtitle {
+        font-size: 0.75rem;
+    }
+    
+    .search-container,
+    .auth-container {
+        padding: 10px;
+    }
+    
+    .search-input,
     .search-btn,
     .filter-btn {
-        width: 100%;
         padding: 10px 14px;
         font-size: 13px;
-        justify-content: center;
-    }
-    
-    .auth-buttons {
-        flex-direction: column;
-        gap: 6px;
     }
     
     .auth-btn {
-        width: 100%;
-        padding: 10px 14px;
+        padding: 9px 14px;
         font-size: 0.85rem;
     }
     
     .cctv-list {
-        max-height: 35vh;
+        padding: 6px;
+        max-height: 25vh;
     }
     
     .cctv-item {
         padding: 10px;
         margin-bottom: 6px;
+        border-radius: 10px;
     }
     
-    .admin-controls {
-        flex-direction: column;
-        gap: 4px;
+    .cctv-name {
+        font-size: 0.9rem;
+    }
+    
+    .cctv-location {
+        font-size: 0.75rem;
+    }
+    
+    .cctv-status {
+        padding: 3px 6px;
+        font-size: 0.65rem;
     }
     
     .admin-controls button {
-        width: 100%;
-        padding: 6px 10px;
+        padding: 5px 10px;
+        font-size: 0.65rem;
+    }
+    
+    #videoPlayer {
+        height: 220px;
+    }
+}
+
+/* Mobile Small (480px and below) */
+@media (max-width: 480px) {
+    .sidebar {
+        max-height: 35vh;
     }
     
     .map-container {
         height: 65vh;
+        min-height: 300px;
     }
     
-    #videoPlayer {
-        height: 240px;
-    }
-}
-
-/* Mobile Very Small (320px - 479px) */
-@media (max-width: 479px) {
     .header {
-        padding: 14px 12px;
+        padding: 10px;
     }
     
     .header h1 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+        margin-bottom: 2px;
     }
     
     .header .subtitle {
@@ -1262,14 +1291,10 @@ body::before {
     
     .search-container,
     .auth-container {
-        padding: 12px;
+        padding: 8px;
     }
     
-    .search-input {
-        padding: 9px 12px;
-        font-size: 12px;
-    }
-    
+    .search-input,
     .search-btn,
     .filter-btn {
         padding: 9px 12px;
@@ -1282,54 +1307,35 @@ body::before {
     }
     
     .cctv-list {
-        padding: 8px;
-        max-height: 30vh;
+        padding: 4px;
+        max-height: 20vh;
     }
     
     .cctv-item {
         padding: 8px;
-        margin-bottom: 5px;
-        border-radius: 10px;
+        margin-bottom: 4px;
+        border-radius: 8px;
     }
     
     .cctv-name {
         font-size: 0.85rem;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
     
     .cctv-location {
         font-size: 0.7rem;
-        margin-bottom: 6px;
-    }
-    
-    .cctv-status {
-        padding: 2px 6px;
-        font-size: 0.6rem;
-    }
-    
-    .admin-controls button {
-        padding: 5px 8px;
-        font-size: 0.6rem;
-    }
-    
-    .map-container {
-        height: 70vh;
-        min-height: 350px;
+        margin-bottom: 4px;
     }
     
     .add-cctv-btn {
         top: 8px;
         right: 8px;
-        padding: 6px 10px;
+        padding: 8px 12px;
         font-size: 0.75rem;
     }
     
-    .modal {
-        padding: 8px;
-    }
-    
     .modal-content {
-        padding: 16px;
+        padding: 12px;
         border-radius: 12px;
     }
     
@@ -1338,156 +1344,162 @@ body::before {
         margin-bottom: 12px;
     }
     
-    .form-group {
-        margin-bottom: 12px;
-    }
-    
-    .form-group label {
-        font-size: 0.75rem;
-        margin-bottom: 4px;
-    }
-    
     .form-group input,
     .form-group select {
-        padding: 8px 12px;
-        font-size: 12px;
-        border-radius: 8px;
-    }
-    
-    .form-buttons {
-        gap: 6px;
-        margin-top: 12px;
-    }
-    
-    .form-buttons button {
         padding: 10px 14px;
-        font-size: 0.8rem;
-        border-radius: 8px;
-        margin-bottom: 6px;
+        font-size: 13px;
     }
     
     .video-content {
-        width: 100%;
+        margin: 5px;
+        width: calc(100% - 10px);
         border-radius: 8px;
-        margin: 10px;
-        width: calc(100% - 20px);
     }
     
     .video-header {
-        padding: 10px 12px;
+        padding: 8px 12px;
     }
     
     .video-header h3 {
         font-size: 0.9rem;
     }
     
-    .close-video {
-        padding: 4px 8px;
-        font-size: 18px;
-    }
-    
     #videoPlayer {
-        height: 200px;
-    }
-    
-    .notification {
-        top: 8px;
-        right: 8px;
-        left: 8px;
-        padding: 10px 12px;
-        font-size: 0.8rem;
-        border-radius: 8px;
-    }
-    
-    .loading {
-        padding: 16px;
-        border-radius: 12px;
-    }
-    
-    .loading-spinner {
-        width: 28px;
-        height: 28px;
-        margin-bottom: 10px;
+        height: 180px;
     }
 }
 
-/* Landscape orientation for mobile */
-@media (max-width: 767px) and (orientation: landscape) {
+/* Mobile Very Small (360px and below) */
+@media (max-width: 360px) {
+    .sidebar {
+        max-height: 30vh;
+    }
+    
+    .map-container {
+        height: 70vh;
+        min-height: 280px;
+    }
+    
+    .header h1 {
+        font-size: 1rem;
+    }
+    
+    .cctv-list {
+        max-height: 15vh;
+    }
+    
+    .cctv-item {
+        padding: 6px;
+    }
+    
+    .cctv-name {
+        font-size: 0.8rem;
+    }
+    
+    .cctv-location {
+        font-size: 0.65rem;
+    }
+    
+    #videoPlayer {
+        height: 160px;
+    }
+}
+
+/* Landscape orientation optimization for mobile */
+@media (max-width: 768px) and (orientation: landscape) {
     .container {
         flex-direction: row;
+        height: 100vh;
     }
     
     .sidebar {
         width: 300px;
+        max-width: 35vw;
         height: 100vh;
+        max-height: none;
         border-right: 1px solid rgba(255, 255, 255, 0.2);
         border-bottom: none;
+        overflow-y: auto;
+    }
+    
+    .map-container {
+        flex: 1;
+        height: 100vh;
+        max-height: none;
+        order: 1;
+    }
+    
+    .header {
+        padding: 10px;
+    }
+    
+    .header h1 {
+        font-size: 1.1rem;
+        margin-bottom: 2px;
+    }
+    
+    .header .subtitle {
+        font-size: 0.7rem;
+    }
+    
+    .search-container,
+    .auth-container {
+        padding: 8px;
     }
     
     .cctv-list {
         max-height: none;
         flex: 1;
-    }
-    
-    .map-container {
-        height: 100vh;
-        flex: 1;
-    }
-    
-    .header {
-        padding: 12px 10px;
-    }
-    
-    .header h1 {
-        font-size: 1.1rem;
-        margin-bottom: 3px;
-    }
-    
-    .header .subtitle {
-        font-size: 0.65rem;
-    }
-    
-    .search-container,
-    .auth-container {
-        padding: 10px;
+        padding: 6px;
     }
     
     .cctv-item {
         padding: 8px;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
 }
 
-/* Tablet responsive fixes */
-@media (min-width: 768px) and (max-width: 1023px) {
+/* Tablet landscape (1024px and below in landscape) */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
     .sidebar {
-        width: 340px;
+        width: 350px;
     }
     
-    .map-container {
-        flex: 1;
+    .header {
+        padding: 20px;
     }
     
-    #map {
-        width: 100%;
-        height: 100%;
+    .search-container,
+    .auth-container {
+        padding: 16px;
     }
 }
 
-/* Desktop responsive */
-@media (min-width: 1024px) {
-    .sidebar {
-        width: 420px;
+/* Touch device optimizations */
+@media (pointer: coarse) {
+    .search-btn,
+    .filter-btn,
+    .auth-btn,
+    .admin-controls button,
+    .form-buttons button,
+    .add-cctv-btn,
+    .close-video,
+    .custom-popup .watch-btn {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
     }
     
-    .map-container {
-        flex: 1;
-        border-radius: 0 20px 20px 0;
+    .cctv-item {
+        min-height: 60px;
+        touch-action: manipulation;
     }
     
-    #map {
-        width: 100%;
-        height: 100%;
+    .search-input,
+    .form-group input,
+    .form-group select {
+        min-height: 44px;
+        touch-action: manipulation;
     }
 }
 
@@ -1504,30 +1516,6 @@ body::before {
     *::-webkit-scrollbar {
         width: 6px;
         height: 6px;
-    }
-}
-
-/* Touch device optimizations */
-@media (pointer: coarse) {
-    .search-btn,
-    .filter-btn,
-    .auth-btn,
-    .admin-controls button,
-    .form-buttons button,
-    .add-cctv-btn,
-    .close-video {
-        min-height: 44px;
-        min-width: 44px;
-    }
-    
-    .cctv-item {
-        min-height: 60px;
-    }
-    
-    .search-input,
-    .form-group input,
-    .form-group select {
-        min-height: 44px;
     }
 }
 
