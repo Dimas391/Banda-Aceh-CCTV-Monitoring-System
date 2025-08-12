@@ -11,1612 +11,888 @@
     <!-- HLS.js for video streaming -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
     <style>
-     * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    overflow: hidden;
-    position: relative;
-    height: 100vh;
-    width: 100vw;
-}
-
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: 
-        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255,255,255,0.08) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 1;
-}
-
-.container {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
-    position: relative;
-    z-index: 2;
-}
-
-.sidebar {
-    width: 420px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    box-shadow: 
-        0 0 40px rgba(0, 0, 0, 0.1),
-        inset 1px 0 0 rgba(255, 255, 255, 0.2);
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    z-index: 1000;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 30px 25px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.header::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: 
-        radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-    animation: float 20s ease-in-out infinite;
-    opacity: 0.3;
-}
-
-@keyframes float {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    33% { transform: translate(30px, -30px) rotate(120deg); }
-    66% { transform: translate(-20px, 20px) rotate(240deg); }
-}
-
-.header h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-    position: relative;
-    z-index: 1;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
-.header .subtitle {
-    font-size: 0.9rem;
-    opacity: 0.9;
-    position: relative;
-    z-index: 1;
-    font-weight: 400;
-}
-
-.search-container {
-    padding: 25px;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    background: rgba(255,255,255,0.5);
-}
-
-.search-box {
-    position: relative;
-    display: flex;
-    gap: 12px;
-}
-
-.search-input {
-    flex: 1;
-    padding: 15px 20px;
-    border: 2px solid rgba(102, 126, 234, 0.2);
-    border-radius: 50px;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255,255,255,0.8);
-    backdrop-filter: blur(10px);
-    font-weight: 500;
-}
-
-.search-input:focus {
-    border-color: #667eea;
-    box-shadow: 
-        0 0 0 4px rgba(102, 126, 234, 0.1),
-        0 8px 25px rgba(102, 126, 234, 0.15);
-    transform: translateY(-2px);
-}
-
-.search-input::placeholder {
-    color: rgba(0,0,0,0.5);
-    font-weight: 400;
-}
-
-.search-btn, .filter-btn {
-    padding: 15px 20px;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-}
-
-.search-btn::before, .filter-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-
-.search-btn:hover::before, .filter-btn:hover::before {
-    left: 100%;
-}
-
-.search-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.filter-btn {
-    background: rgba(255,255,255,0.9);
-    color: #495057;
-    border: 2px solid rgba(102, 126, 234, 0.2);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.search-btn:hover, .filter-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 
-        0 8px 25px rgba(102, 126, 234, 0.4),
-        0 0 0 1px rgba(255,255,255,0.1);
-}
-
-.auth-container {
-    padding: 25px;
-    border-bottom: 1px solid rgba(0,0,0,0.08);
-    background: rgba(255,255,255,0.3);
-}
-
-.auth-buttons {
-    display: flex;
-    gap: 12px;
-}
-
-.auth-btn {
-    flex: 1;
-    padding: 12px 16px;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(10px);
-}
-
-.auth-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transition: left 0.5s;
-}
-
-.auth-btn:hover::before {
-    left: 100%;
-}
-
-.login-btn {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-}
-
-.admin-btn {
-    background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(253, 126, 20, 0.3);
-}
-
-.logout-btn {
-    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-}
-
-.auth-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 
-        0 8px 25px rgba(0,0,0,0.2),
-        0 0 0 1px rgba(255,255,255,0.1);
-}
-
-#loggedInUser {
-    background: rgba(255,255,255,0.9);
-    padding: 15px;
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-.cctv-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
-    background: rgba(255,255,255,0.2);
-}
-
-.cctv-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.cctv-list::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.1);
-    border-radius: 3px;
-}
-
-.cctv-list::-webkit-scrollbar-thumb {
-    background: rgba(102, 126, 234, 0.3);
-    border-radius: 3px;
-}
-
-.cctv-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(102, 126, 234, 0.5);
-}
-
-.cctv-item {
-    background: rgba(255,255,255,0.95);
-    margin-bottom: 15px;
-    padding: 20px;
-    border-radius: 20px;
-    box-shadow: 
-        0 4px 20px rgba(0, 0, 0, 0.08),
-        0 0 0 1px rgba(255,255,255,0.5);
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.cctv-item::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 5px;
-    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-    border-radius: 0 10px 10px 0;
-}
-
-.cctv-item::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.cctv-item:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 
-        0 15px 40px rgba(0, 0, 0, 0.15),
-        0 0 0 1px rgba(255,255,255,0.6);
-}
-
-.cctv-item:hover::after {
-    opacity: 1;
-}
-
-.cctv-item.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 
-        0 15px 40px rgba(102, 126, 234, 0.3),
-        0 0 0 1px rgba(255,255,255,0.3);
-}
-
-.cctv-name {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-    color: inherit;
-}
-
-.cctv-location {
-    font-size: 0.9rem;
-    opacity: 0.8;
-    margin-bottom: 12px;
-    font-weight: 400;
-}
-
-.modal-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 20px;
-}
-
-.modal-center .modal-content {
-    margin: 0;
-    width: 100%;
-    max-width: 450px;
-    animation: modalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes modalFadeIn {
-    from { 
-        opacity: 0; 
-        transform: scale(0.9) translateY(-20px); 
-    }
-    to { 
-        opacity: 1; 
-        transform: scale(1) translateY(0); 
-    }
-}
-
-.cctv-status {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    backdrop-filter: blur(10px);
-}
-
-.status-online {
-    background: linear-gradient(135deg, rgba(40, 167, 69, 0.2) 0%, rgba(32, 201, 151, 0.2) 100%);
-    color: #28a745;
-    border: 1px solid rgba(40, 167, 69, 0.3);
-}
-
-.status-offline {
-    background: linear-gradient(135deg, rgba(220, 53, 69, 0.2) 0%, rgba(253, 126, 20, 0.2) 100%);
-    color: #dc3545;
-    border: 1px solid rgba(220, 53, 69, 0.3);
-}
-
-.cctv-item.active .status-online,
-.cctv-item.active .status-offline {
-    background: rgba(255, 255, 255, 0.25);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.admin-controls {
-    margin-top: 15px;
-    display: none;
-    gap: 8px;
-}
-
-.admin-controls button {
-    z-index: 9999;
-    position: relative;
-    padding: 8px 14px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 0.75rem;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
-}
-
-.edit-btn {
-    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
-    color: #212529;
-    box-shadow: 0 2px 10px rgba(255, 193, 7, 0.3);
-}
-
-.delete-btn {
-    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
-    color: white;
-    box-shadow: 0 2px 10px rgba(220, 53, 69, 0.3);
-}
-
-.admin-controls button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-.map-container {
-    flex: 1;
-    position: relative;
-    border-radius: 0 20px 20px 0;
-    overflow: hidden;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
-}
-
-#map {
-    width: 100%;
-    height: 100%;
-}
-
-.add-cctv-btn {
-    position: absolute;
-    top: 25px;
-    right: 25px;
-    padding: 15px 20px;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: 600;
-    box-shadow: 
-        0 8px 25px rgba(40, 167, 69, 0.3),
-        0 0 0 1px rgba(255,255,255,0.2);
-    z-index: 1000;
-    display: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(20px);
-}
-
-.add-cctv-btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 
-        0 12px 35px rgba(40, 167, 69, 0.4),
-        0 0 0 1px rgba(255,255,255,0.3);
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-}
-
-.modal-content {
-    background: rgba(255,255,255,0.95);
-    margin: 5% auto;
-    padding: 35px;
-    border-radius: 25px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 
-        0 25px 80px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255,255,255,0.2);
-    animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-@keyframes modalSlideIn {
-    from {
-        transform: translateY(-50px) scale(0.9);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
-}
-
-.modal h2 {
-    margin-bottom: 25px;
-    color: #333;
-    text-align: center;
-    font-weight: 600;
-    font-size: 1.5rem;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #555;
-    font-size: 0.9rem;
-}
-
-.form-group input, .form-group select {
-    width: 100%;
-    padding: 14px 18px;
-    border: 2px solid rgba(102, 126, 234, 0.2);
-    border-radius: 15px;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: rgba(255,255,255,0.8);
-    backdrop-filter: blur(10px);
-    font-weight: 500;
-}
-
-.form-group input:focus, .form-group select:focus {
-    border-color: #667eea;
-    box-shadow: 
-        0 0 0 4px rgba(102, 126, 234, 0.1),
-        0 4px 15px rgba(102, 126, 234, 0.15);
-    transform: translateY(-2px);
-}
-
-.form-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-top: 25px;
-}
-
-.form-buttons button {
-    padding: 14px 28px;
-    border: none;
-    border-radius: 15px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
-}
-
-.save-btn {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-}
-
-.cancel-btn {
-    background: rgba(108, 117, 125, 0.9);
-    color: white;
-    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-}
-
-.form-buttons button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.video-modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    backdrop-filter: blur(10px);
-}
-
-.video-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 900px;
-    background: rgba(255,255,255,0.95);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 
-        0 25px 80px rgba(0, 0, 0, 0.5),
-        0 0 0 1px rgba(255,255,255,0.2);
-    backdrop-filter: blur(20px);
-}
-
-.video-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.video-header h3 {
-    font-weight: 600;
-    font-size: 1.2rem;
-}
-
-.close-video {
-    background: rgba(255,255,255,0.2);
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 8px 12px;
-    border-radius: 50%;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(10px);
-}
-
-.close-video:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.1);
-}
-
-#videoPlayer {
-    width: 100%;
-    height: 400px;
-    background: #000;
-}
-
-.login-modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-}
-
-.loading {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255,255,255,0.95);
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 
-        0 25px 80px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(255,255,255,0.2);
-    z-index: 3000;
-    backdrop-filter: blur(20px);
-    text-align: center;
-}
-
-.loading-spinner {
-    border: 3px solid rgba(102, 126, 234, 0.2);
-    border-top: 3px solid #667eea;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 15px;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.loading p {
-    color: #333;
-    font-weight: 500;
-    margin: 0;
-}
-
-.leaflet-popup-content-wrapper {
-    border-radius: 15px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px);
-    background: rgba(255,255,255,0.95);
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-.custom-popup {
-    text-align: center;
-    padding: 15px;
-}
-
-.custom-popup h3 {
-    margin-bottom: 12px;
-    color: #333;
-    font-weight: 600;
-}
-
-.custom-popup p {
-    margin-bottom: 8px;
-    font-weight: 500;
-}
-
-.custom-popup .watch-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    margin-top: 8px;
-}
-
-.custom-popup .watch-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-}
-
-.stream-indicator {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-left: 8px;
-    animation: pulse 2s infinite;
-    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
-}
-
-.stream-live {
-    background: #ff0000;
-}
-
-@keyframes pulse {
-    0% { 
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
-    }
-    70% {
-        transform: scale(1.2);
-        box-shadow: 0 0 0 10px rgba(255, 0, 0, 0);
-    }
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
-    }
-}
-
-/* Filter Menu Enhanced */
-.filter-menu {
-    background: rgba(255,255,255,0.95) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255,255,255,0.3) !important;
-    box-shadow: 
-        0 15px 40px rgba(0, 0, 0, 0.15),
-        0 0 0 1px rgba(255,255,255,0.2) !important;
-}
-
-.filter-menu h4 {
-    color: #333;
-    font-weight: 600;
-}
-
-.filter-menu select {
-    border: 2px solid rgba(102, 126, 234, 0.2);
-    border-radius: 10px;
-    background: rgba(255,255,255,0.8);
-    backdrop-filter: blur(10px);
-}
-
-.filter-menu button {
-    border-radius: 10px;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.filter-menu button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-}
-
-/* Auth form links */
-.modal-content a {
-    color: #667eea;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-}
-
-.modal-content a:hover {
-    color: #764ba2;
-}
-
-/* Additional styling for form inputs */
-.form-group input::placeholder {
-    color: rgba(0,0,0,0.5);
-    font-weight: 400;
-}
-
-/* Enhanced notification styles */
-.notification {
-    position: fixed;
-    top: 25px;
-    right: 25px;
-    padding: 18px 24px;
-    border-radius: 15px;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.12),
-        0 0 0 1px rgba(255,255,255,0.2);
-    z-index: 3000;
-    font-weight: 600;
-    max-width: 350px;
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.3);
-    animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.notification.success {
-    background: linear-gradient(135deg, rgba(40, 167, 69, 0.95) 0%, rgba(32, 201, 151, 0.95) 100%);
-    color: white;
-}
-
-.notification.error {
-    background: linear-gradient(135deg, rgba(220, 53, 69, 0.95) 0%, rgba(253, 126, 20, 0.95) 100%);
-    color: white;
-}
-
-.notification.info {
-    background: linear-gradient(135deg, rgba(23, 162, 184, 0.95) 0%, rgba(102, 126, 234, 0.95) 100%);
-    color: white;
-}
-
-@keyframes slideInRight {
-    from { 
-        transform: translateX(100%) scale(0.9); 
-        opacity: 0; 
-    }
-    to { 
-        transform: translateX(0) scale(1); 
-        opacity: 1; 
-    }
-}
-
-@keyframes slideOutRight {
-    from { 
-        transform: translateX(0) scale(1); 
-        opacity: 1; 
-    }
-    to { 
-        transform: translateX(100%) scale(0.9); 
-        opacity: 0; 
-    }
-}
-
-/* Enhanced marker styles */
-.custom-marker div {
-    border: 3px solid white !important;
-    box-shadow: 
-        0 4px 15px rgba(0,0,0,0.3),
-        0 0 0 2px rgba(255,255,255,0.5) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.custom-marker:hover div {
-    transform: scale(1.2) !important;
-    box-shadow: 
-        0 6px 20px rgba(0,0,0,0.4),
-        0 0 0 3px rgba(255,255,255,0.7) !important;
-}
-
-/* Map control enhancements */
-.leaflet-control-custom {
-    background: rgba(255,255,255,0.95) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255,255,255,0.3) !important;
-    border-radius: 10px !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.leaflet-control-custom:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
-}
-
-/* Scrollbar enhancement for webkit browsers */
-* {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(102, 126, 234, 0.3) rgba(255,255,255,0.1);
-}
-
-*::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-*::-webkit-scrollbar-track {
-    background: rgba(255,255,255,0.1);
-    border-radius: 4px;
-}
-
-*::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(118, 75, 162, 0.5) 100%);
-    border-radius: 4px;
-    border: 1px solid rgba(255,255,255,0.2);
-}
-
-*::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%);
-}
-
-/* MOBILE RESPONSIVE FIXES - COMPLETELY REDESIGNED */
-
-/* Mobile Large (768px and below) - Primary mobile breakpoint */
-@media (max-width: 768px) {
-    body {
-        overflow: auto;
-        height: auto;
-        min-height: 100vh;
-    }
-    
-    .container {
-        flex-direction: column;
-        height: auto;
-        min-height: 100vh;
-    }
-    
-    .sidebar {
-        width: 100%;
-        height: auto;
-        border-radius: 0;
-        border-right: none;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        flex-shrink: 0;
-        max-height: 45vh;
-        overflow-y: auto;
-    }
-    
-    .header {
-        padding: 16px;
-    }
-    
-    .header h1 {
-        font-size: 1.3rem;
-        margin-bottom: 4px;
-    }
-    
-    .header .subtitle {
-        font-size: 0.8rem;
-    }
-    
-    .search-container,
-    .auth-container {
-        padding: 12px;
-    }
-    
-    .search-box {
-        gap: 8px;
-        flex-direction: column;
-    }
-    
-    .search-input,
-    .search-btn,
-    .filter-btn {
-        width: 100%;
-        padding: 12px 16px;
-        font-size: 14px;
-        border-radius: 25px;
-    }
-    
-    .auth-buttons {
-        gap: 8px;
-        flex-direction: column;
-    }
-    
-    .auth-btn {
-        width: 100%;
-        padding: 10px 16px;
-        font-size: 0.9rem;
-        border-radius: 20px;
-    }
-    
-    .cctv-list {
-        padding: 8px;
-        max-height: 30vh;
-        overflow-y: auto;
-        flex: none;
-    }
-    
-    .cctv-item {
-        padding: 12px;
-        margin-bottom: 8px;
-        border-radius: 12px;
-    }
-    
-    .cctv-name {
-        font-size: 0.95rem;
-        margin-bottom: 4px;
-    }
-    
-    .cctv-location {
-        font-size: 0.8rem;
-        margin-bottom: 8px;
-    }
-    
-    .cctv-status {
-        padding: 4px 8px;
-        font-size: 0.7rem;
-    }
-    
-    .admin-controls {
-        margin-top: 8px;
-        gap: 4px;
-        flex-direction: column;
-    }
-    
-    .admin-controls button {
-        padding: 6px 12px;
-        font-size: 0.7rem;
-        width: 100%;
-    }
-    
-    /* MAP TAKES FULL SCREEN ON MOBILE */
-    .map-container {
-        height: 55vh;
-        min-height: 400px;
-        max-height: 60vh;
-        border-radius: 0;
-        flex: 1;
-        position: relative;
-        order: 2;
-    }
-    
-    #map {
-        width: 100% !important;
-        height: 100% !important;
-        border-radius: 0 !important;
-    }
-    
-    .add-cctv-btn {
-        top: 10px;
-        right: 10px;
-        padding: 10px 16px;
-        font-size: 0.8rem;
-        border-radius: 20px;
-    }
-    
-    .modal {
-        padding: 10px;
-    }
-    
-    .modal-content,
-    .modal-center .modal-content {
-        margin: 0;
-        padding: 16px;
-        border-radius: 16px;
-        max-width: none;
-        width: calc(100% - 20px);
-        max-height: 90vh;
-        overflow-y: auto;
-    }
-    
-    .modal h2 {
-        font-size: 1.1rem;
-        margin-bottom: 16px;
-    }
-    
-    .form-group {
-        margin-bottom: 12px;
-    }
-    
-    .form-group label {
-        font-size: 0.85rem;
-        margin-bottom: 4px;
-    }
-    
-    .form-group input,
-    .form-group select {
-        padding: 12px 16px;
-        font-size: 14px;
-        border-radius: 12px;
-    }
-    
-    .form-buttons {
-        gap: 8px;
-        margin-top: 16px;
-        flex-direction: column;
-    }
-    
-    .form-buttons button {
-        width: 100%;
-        padding: 12px 16px;
-        font-size: 0.9rem;
-        border-radius: 10px;
-    }
-    
-    .video-content {
-        width: calc(100% - 20px);
-        border-radius: 12px;
-        margin: 10px;
-    }
-    
-    .video-header {
-        padding: 12px 16px;
-    }
-    
-    .video-header h3 {
-        font-size: 1rem;
-    }
-    
-    .close-video {
-        padding: 6px 10px;
-        font-size: 20px;
-    }
-    
-    #videoPlayer {
-        height: 250px;
-    }
-    
-    .notification {
-        top: 10px;
-        right: 10px;
-        left: 10px;
-        max-width: none;
-        padding: 12px 16px;
-        font-size: 0.85rem;
-        border-radius: 10px;
-    }
-    
-    .loading {
-        padding: 20px;
-        border-radius: 16px;
-        width: calc(100% - 40px);
-        max-width: 300px;
-    }
-    
-    .loading-spinner {
-        width: 32px;
-        height: 32px;
-        margin-bottom: 12px;
-    }
-}
-
-/* Mobile Medium (640px and below) */
-@media (max-width: 640px) {
-    .sidebar {
-        max-height: 40vh;
-    }
-    
-    .map-container {
-        height: 60vh;
-        max-height: none;
-        min-height: 350px;
-    }
-    
-    .header {
-        padding: 12px;
-    }
-    
-    .header h1 {
-        font-size: 1.2rem;
-    }
-    
-    .header .subtitle {
-        font-size: 0.75rem;
-    }
-    
-    .search-container,
-    .auth-container {
-        padding: 10px;
-    }
-    
-    .search-input,
-    .search-btn,
-    .filter-btn {
-        padding: 10px 14px;
-        font-size: 13px;
-    }
-    
-    .auth-btn {
-        padding: 9px 14px;
-        font-size: 0.85rem;
-    }
-    
-    .cctv-list {
-        padding: 6px;
-        max-height: 25vh;
-    }
-    
-    .cctv-item {
-        padding: 10px;
-        margin-bottom: 6px;
-        border-radius: 10px;
-    }
-    
-    .cctv-name {
-        font-size: 0.9rem;
-    }
-    
-    .cctv-location {
-        font-size: 0.75rem;
-    }
-    
-    .cctv-status {
-        padding: 3px 6px;
-        font-size: 0.65rem;
-    }
-    
-    .admin-controls button {
-        padding: 5px 10px;
-        font-size: 0.65rem;
-    }
-    
-    #videoPlayer {
-        height: 220px;
-    }
-}
-
-/* Mobile Small (480px and below) */
-@media (max-width: 480px) {
-    .sidebar {
-        max-height: 35vh;
-    }
-    
-    .map-container {
-        height: 65vh;
-        min-height: 300px;
-    }
-    
-    .header {
-        padding: 10px;
-    }
-    
-    .header h1 {
-        font-size: 1.1rem;
-        margin-bottom: 2px;
-    }
-    
-    .header .subtitle {
-        font-size: 0.7rem;
-    }
-    
-    .search-container,
-    .auth-container {
-        padding: 8px;
-    }
-    
-    .search-input,
-    .search-btn,
-    .filter-btn {
-        padding: 9px 12px;
-        font-size: 12px;
-    }
-    
-    .auth-btn {
-        padding: 8px 12px;
-        font-size: 0.8rem;
-    }
-    
-    .cctv-list {
-        padding: 4px;
-        max-height: 20vh;
-    }
-    
-    .cctv-item {
-        padding: 8px;
-        margin-bottom: 4px;
-        border-radius: 8px;
-    }
-    
-    .cctv-name {
-        font-size: 0.85rem;
-        margin-bottom: 2px;
-    }
-    
-    .cctv-location {
-        font-size: 0.7rem;
-        margin-bottom: 4px;
-    }
-    
-    .add-cctv-btn {
-        top: 8px;
-        right: 8px;
-        padding: 8px 12px;
-        font-size: 0.75rem;
-    }
-    
-    .modal-content {
-        padding: 12px;
-        border-radius: 12px;
-    }
-    
-    .modal h2 {
-        font-size: 1rem;
-        margin-bottom: 12px;
-    }
-    
-    .form-group input,
-    .form-group select {
-        padding: 10px 14px;
-        font-size: 13px;
-    }
-    
-    .video-content {
-        margin: 5px;
-        width: calc(100% - 10px);
-        border-radius: 8px;
-    }
-    
-    .video-header {
-        padding: 8px 12px;
-    }
-    
-    .video-header h3 {
-        font-size: 0.9rem;
-    }
-    
-    #videoPlayer {
-        height: 180px;
-    }
-}
-
-/* Mobile Very Small (360px and below) */
-@media (max-width: 360px) {
-    .sidebar {
-        max-height: 30vh;
-    }
-    
-    .map-container {
-        height: 70vh;
-        min-height: 280px;
-    }
-    
-    .header h1 {
-        font-size: 1rem;
-    }
-    
-    .cctv-list {
-        max-height: 15vh;
-    }
-    
-    .cctv-item {
-        padding: 6px;
-    }
-    
-    .cctv-name {
-        font-size: 0.8rem;
-    }
-    
-    .cctv-location {
-        font-size: 0.65rem;
-    }
-    
-    #videoPlayer {
-        height: 160px;
-    }
-}
-
-/* Landscape orientation optimization for mobile */
-@media (max-width: 768px) and (orientation: landscape) {
-    .container {
-        flex-direction: row;
-        height: 100vh;
-    }
-    
-    .sidebar {
-        width: 300px;
-        max-width: 35vw;
-        height: 100vh;
-        max-height: none;
-        border-right: 1px solid rgba(255, 255, 255, 0.2);
-        border-bottom: none;
-        overflow-y: auto;
-    }
-    
-    .map-container {
-        flex: 1;
-        height: 100vh;
-        max-height: none;
-        order: 1;
-    }
-    
-    .header {
-        padding: 10px;
-    }
-    
-    .header h1 {
-        font-size: 1.1rem;
-        margin-bottom: 2px;
-    }
-    
-    .header .subtitle {
-        font-size: 0.7rem;
-    }
-    
-    .search-container,
-    .auth-container {
-        padding: 8px;
-    }
-    
-    .cctv-list {
-        max-height: none;
-        flex: 1;
-        padding: 6px;
-    }
-    
-    .cctv-item {
-        padding: 8px;
-        margin-bottom: 6px;
-    }
-}
-
-/* Tablet landscape (1024px and below in landscape) */
-@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
-    .sidebar {
-        width: 350px;
-    }
-    
-    .header {
-        padding: 20px;
-    }
-    
-    .search-container,
-    .auth-container {
-        padding: 16px;
-    }
-}
-
-/* Touch device optimizations */
-@media (pointer: coarse) {
-    .search-btn,
-    .filter-btn,
-    .auth-btn,
-    .admin-controls button,
-    .form-buttons button,
-    .add-cctv-btn,
-    .close-video,
-    .custom-popup .watch-btn {
-        min-height: 44px;
-        min-width: 44px;
-        touch-action: manipulation;
-    }
-    
-    .cctv-item {
-        min-height: 60px;
-        touch-action: manipulation;
-    }
-    
-    .search-input,
-    .form-group input,
-    .form-group select {
-        min-height: 44px;
-        touch-action: manipulation;
-    }
-}
-
-/* High DPI displays */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    .loading-spinner {
-        border-width: 2px;
-    }
-    
-    .cctv-item::before {
-        width: 4px;
-    }
-    
-    *::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-}
-
-/* Reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-    
-    .header::before {
-        animation: none;
-    }
-    
-    .stream-indicator {
-        animation: none;
-    }
-    
-    .loading-spinner {
-        animation: none;
-        border: 3px solid #667eea;
-        border-top: 3px solid rgba(102, 126, 234, 0.2);
-    }
-}
-
-/* Print styles */
-@media print {
-    body::before,
-    .video-modal,
-    .modal,
-    .loading,
-    .notification,
-    .add-cctv-btn,
-    .admin-controls {
-        display: none !important;
-    }
-    
-    .container {
-        flex-direction: column;
-        height: auto;
-    }
-    
-    .sidebar,
-    .map-container {
-        width: 100%;
-        height: auto;
-        box-shadow: none;
-        border: 1px solid #ddd;
-    }
-    
-    .cctv-item {
-        break-inside: avoid;
-        page-break-inside: avoid;
-    }
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Mobile-first approach */
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Collapsible sidebar for mobile */
+        .sidebar {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mobile-header h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .mobile-toggle {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-toggle:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .sidebar-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .sidebar-content.expanded {
+            max-height: 70vh;
+        }
+
+        .desktop-header {
+            display: none;
+        }
+
+        /* Compact auth section */
+        .auth-container {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            background: rgba(255,255,255,0.3);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .auth-btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .admin-btn {
+            background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+            color: white;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+        }
+
+        .auth-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Compact search */
+        .search-container {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            background: rgba(255,255,255,0.8);
+            font-weight: 500;
+        }
+
+        .search-btn, .filter-btn {
+            padding: 10px 12px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .filter-btn {
+            background: rgba(255,255,255,0.9);
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        /* Compact CCTV list */
+        .cctv-list {
+            padding: 8px 16px;
+            max-height: 40vh;
+            overflow-y: auto;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .cctv-item {
+            background: rgba(255,255,255,0.95);
+            margin-bottom: 8px;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .cctv-item:active {
+            transform: scale(0.98);
+        }
+
+        .cctv-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-left-color: white;
+        }
+
+        .cctv-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .cctv-location {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .cctv-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-online {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .status-offline {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .cctv-item.active .status-online,
+        .cctv-item.active .status-offline {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Admin controls - stacked for mobile */
+        .admin-controls {
+            margin-top: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .admin-controls button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: #212529;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+            color: white;
+        }
+
+        .admin-controls button:active {
+            transform: scale(0.96);
+        }
+
+        /* Map container - larger on mobile */
+        .map-container {
+            flex: 1;
+            min-height: 60vh;
+            position: relative;
+            background: #f8f9fa;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            min-height: 60vh;
+        }
+
+        .add-cctv-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            z-index: 1000;
+            display: none;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .add-cctv-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Modal improvements for mobile */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 16px;
+        }
+
+        .modal-content {
+            background: rgba(255,255,255,0.95);
+            margin: 20px auto;
+            padding: 24px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            backdrop-filter: blur(20px);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 16px;
+        }
+
+        .modal-center .modal-content {
+            margin: 0;
+        }
+
+        .modal h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            font-size: 16px; /* Prevents zoom on iOS */
+            outline: none;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.8);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .form-buttons button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            order: 1;
+        }
+
+        .cancel-btn {
+            background: rgba(108, 117, 125, 0.9);
+            color: white;
+            order: 2;
+        }
+
+        .form-buttons button:active {
+            transform: scale(0.98);
+        }
+
+        /* Video modal for mobile */
+        .video-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+        }
+
+        .video-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95%;
+            max-width: 600px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .video-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .video-header h3 {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .close-video {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .close-video:active {
+            transform: scale(0.9);
+        }
+
+        #videoPlayer {
+            width: 100%;
+            height: 50vh;
+            background: #000;
+        }
+
+        /* Notifications for mobile */
+        .notification {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            padding: 16px;
+            border-radius: 12px;
+            z-index: 3000;
+            font-weight: 600;
+            backdrop-filter: blur(20px);
+            animation: slideDown 0.3s ease;
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.95) 0%, rgba(32, 201, 151, 0.95) 100%);
+            color: white;
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.95) 0%, rgba(253, 126, 20, 0.95) 100%);
+            color: white;
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, rgba(23, 162, 184, 0.95) 0%, rgba(102, 126, 234, 0.95) 100%);
+            color: white;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Loading modal */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.95);
+            padding: 24px;
+            border-radius: 16px;
+            z-index: 3000;
+            backdrop-filter: blur(20px);
+            text-align: center;
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Popup improvements */
+        .custom-popup {
+            text-align: center;
+            padding: 12px;
+        }
+
+        .custom-popup h3 {
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .custom-popup p {
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .custom-popup .watch-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+
+        /* Stream indicator */
+        .stream-indicator {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-left: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        .stream-live {
+            background: #ff0000;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Scrollbar for mobile */
+        .cctv-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .cctv-list::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .cctv-list::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 2px;
+        }
+
+        /* Touch feedback */
+        .touchable:active {
+            background-color: rgba(0,0,0,0.05);
+        }
+
+        /* Tablet styles (768px and up) */
+        @media (min-width: 768px) {
+            .container {
+                flex-direction: row;
+            }
+
+            .sidebar {
+                width: 380px;
+                height: 100vh;
+                border-radius: 0;
+            }
+
+            .mobile-header {
+                display: none;
+            }
+
+            .desktop-header {
+                display: block;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 24px;
+                text-align: center;
+            }
+
+            .desktop-header h1 {
+                font-size: 1.6rem;
+                font-weight: 700;
+                margin-bottom: 6px;
+            }
+
+            .desktop-header .subtitle {
+                font-size: 0.9rem;
+                opacity: 0.9;
+            }
+
+            .sidebar-content {
+                max-height: none;
+                overflow: visible;
+                display: flex;
+                flex-direction: column;
+                height: calc(100vh - 120px);
+            }
+
+            .sidebar-content.expanded {
+                max-height: none;
+            }
+
+            .cctv-list {
+                flex: 1;
+                max-height: none;
+                padding: 16px;
+            }
+
+            .search-container {
+                padding: 20px;
+            }
+
+            .auth-container {
+                padding: 20px;
+            }
+
+            .map-container {
+                flex: 1;
+                height: 100vh;
+                min-height: auto;
+                border-radius: 0;
+            }
+
+            #map {
+                height: 100vh;
+                min-height: auto;
+            }
+
+            .modal-content {
+                max-width: 500px;
+                padding: 32px;
+            }
+
+            .form-buttons {
+                flex-direction: row;
+                justify-content: flex-end;
+            }
+
+            .form-buttons button {
+                min-width: 120px;
+            }
+
+            .save-btn {
+                order: 2;
+            }
+
+            .cancel-btn {
+                order: 1;
+            }
+        }
+
+        /* Desktop styles (1024px and up) */
+        @media (min-width: 1024px) {
+            .sidebar {
+                width: 420px;
+            }
+
+            .map-container {
+                border-radius: 0 20px 20px 0;
+            }
+
+            .cctv-item {
+                padding: 16px;
+            }
+
+            .admin-controls {
+                flex-direction: row;
+            }
+        }
+
+        /* Large screens (1200px and up) */
+        @media (min-width: 1200px) {
+            .sidebar {
+                width: 450px;
+            }
+
+            .desktop-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .desktop-header .subtitle {
+                font-size: 1rem;
+            }
+        }
+
+        /* Landscape orientation fixes */
+        @media (max-width: 767px) and (orientation: landscape) {
+            .sidebar-content.expanded {
+                max-height: 50vh;
+            }
+
+            .map-container {
+                min-height: 50vh;
+            }
+
+            #map {
+                min-height: 50vh;
+            }
+
+            .cctv-list {
+                max-height: 25vh;
+            }
+        }
+
+        /* High DPI screens */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .cctv-item {
+                border-left-width: 3px;
+            }
+
+            .stream-indicator {
+                width: 8px;
+                height: 8px;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .modal-content {
+                background: rgba(33, 37, 41, 0.95);
+                color: white;
+            }
+
+            .form-group label {
+                color: #e9ecef;
+            }
+
+            .form-group input, .form-group select {
+                background: rgba(52, 58, 64, 0.8);
+                color: white;
+                border-color: rgba(102, 126, 234, 0.4);
+            }
+
+            .modal h2 {
+                color: white;
+            }
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .stream-indicator {
+                animation: none;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .mobile-header, .auth-container, .search-container, 
+            .add-cctv-btn, .admin-controls, .modal, .video-modal,
+            .loading, .notification {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+            }
+
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar, .map-container {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
-            <div class="header">
+            <!-- Mobile Header with Toggle -->
+            <div class="mobile-header">
+                <h1>CCTV Banda Aceh</h1>
+                <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+            </div>
+
+            <!-- Desktop Header -->
+            <div class="desktop-header">
                 <h1>CCTV MONITORING</h1>
                 <div class="subtitle">Banda Aceh Smart City</div>
             </div>
 
-    <div class="auth-container">
-
-    <div class="auth-buttons" id="authButtons">
-        <button class="auth-btn login-btn" onclick="showLoginModal()">Login</button>
-        <button class="auth-btn admin-btn" onclick="showRegisterModal()">Daftar</button>
-                </div>
-                <div id="loggedInUser" style="display: none;">
-                    <div style="margin-bottom: 10px;">
-                        <strong>Selamat datang, <span id="userName"></span>!</strong>
-                        <span id="userRole" style="background: #667eea; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; margin-left: 5px;"></span>
+            <div class="sidebar-content" id="sidebarContent">
+                <!-- Auth Section -->
+                <div class="auth-container">
+                    <div class="auth-buttons" id="authButtons">
+                        <button class="auth-btn login-btn touchable" onclick="showLoginModal()">Login</button>
+                        <button class="auth-btn admin-btn touchable" onclick="showRegisterModal()">Daftar</button>
                     </div>
-                    <button class="auth-btn logout-btn" onclick="logout()">Logout</button>
+                    <div id="loggedInUser" style="display: none;">
+                        <div style="margin-bottom: 10px; font-size: 0.9rem;">
+                            <strong>Hai, <span id="userName"></span>!</strong>
+                            <span id="userRole" style="background: #667eea; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; margin-left: 5px;"></span>
+                        </div>
+                        <button class="auth-btn logout-btn touchable" onclick="logout()">Logout</button>
+                    </div>
                 </div>
-            </div>
-            <!-- Search -->
-            <div class="search-container">
-                <div class="search-box">
-                    <input type="text" class="search-input" placeholder="Cari CCTV..." id="searchInput">
-                    <button class="search-btn" onclick="searchCCTV()">🔍</button>
-                    <button class="filter-btn" onclick="toggleFilter()">⚙️</button>
-                </div>
-            </div>
 
-            <!-- CCTV List -->
-            <div class="cctv-list" id="cctvList">
-                <!-- CCTV items will be populated here -->
+                <!-- Search Section -->
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="Cari CCTV..." id="searchInput">
+                        <button class="search-btn touchable" onclick="searchCCTV()">🔍</button>
+                        <button class="filter-btn touchable" onclick="toggleFilter()">⚙️</button>
+                    </div>
+                </div>
+
+                <!-- CCTV List -->
+                <div class="cctv-list" id="cctvList">
+                    <!-- CCTV items will be populated here -->
+                </div>
             </div>
         </div>
 
         <!-- Map Container -->
         <div class="map-container">
             <div id="map"></div>
-            <button class="add-cctv-btn" id="addCctvBtn" onclick="showAddCctvModal()">+ Tambah CCTV</button>
+            <button class="add-cctv-btn touchable" id="addCctvBtn" onclick="showAddCctvModal()">+ Tambah</button>
         </div>
     </div>
 
@@ -1635,91 +911,94 @@ body::before {
                         <input type="password" id="loginPassword" required value="123456">
                     </div>
                     <div class="form-buttons">
-                        <button type="button" class="cancel-btn" onclick="closeLoginModal()">Batal</button>
-                        <button type="submit" class="save-btn">Login</button>
+                        <button type="button" class="cancel-btn touchable" onclick="closeLoginModal()">Batal</button>
+                        <button type="submit" class="save-btn touchable">Login</button>
                     </div>
-                    <div style="text-align: center; margin-top: 15px;">
-                        Belum punya akun? <a href="javascript:void(0)" onclick="switchToRegister()">Daftar disini</a>
+                    <div style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
+                        Belum punya akun? <a href="javascript:void(0)" onclick="switchToRegister()" style="color: #667eea; text-decoration: none; font-weight: 600;">Daftar disini</a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Register Modal -->
     <div class="modal" id="registerModal">
         <div class="modal-center">
-             <div class="modal-content">
+            <div class="modal-content">
                 <h2>Daftar Akun Baru</h2>
-                    <form id="registerForm">
-                            <div class="form-group">
-                                <label for="registerName">Nama Lengkap:</label>
-                                <input type="text" id="registerName" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="registerEmail">Email:</label>
-                                <input type="email" id="registerEmail" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="registerPassword">Password:</label>
-                                <input type="password" id="registerPassword" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="registerConfirmPassword">Konfirmasi Password:</label>
-                                <input type="password" id="registerConfirmPassword" required>
-                            </div>
-                            <div class="form-buttons">
-                                <button type="button" class="cancel-btn" onclick="closeRegisterModal()">Batal</button>
-                                <button type="submit" class="save-btn">Daftar</button>
-                            </div>
-                            <div style="text-align: center; margin-top: 15px;">
-                                Sudah punya akun? <a href="javascript:void(0)" onclick="switchToLogin()">Login disini</a>
-                            </div>
-                        </form>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="registerName">Nama Lengkap:</label>
+                        <input type="text" id="registerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email:</label>
+                        <input type="email" id="registerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password:</label>
+                        <input type="password" id="registerPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerConfirmPassword">Konfirmasi Password:</label>
+                        <input type="password" id="registerConfirmPassword" required>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="cancel-btn touchable" onclick="closeRegisterModal()">Batal</button>
+                        <button type="submit" class="save-btn touchable">Daftar</button>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
+                        Sudah punya akun? <a href="javascript:void(0)" onclick="switchToLogin()" style="color: #667eea; text-decoration: none; font-weight: 600;">Login disini</a>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <!-- Add/Edit CCTV Modal -->
     <div class="modal" id="cctvModal">
-        <div class="modal-content">
-            <h2 id="modalTitle">Tambah CCTV Baru</h2>
-            <form id="cctvForm">
-                <div class="form-group">
-                    <label for="cctvName">Nama CCTV:</label>
-                    <input type="text" id="cctvName" required>
-                </div>
-                <div class="form-group">
-                    <label for="cctvLocation">Lokasi:</label>
-                    <input type="text" id="cctvLocation" required>
-                </div>
-                <div class="form-group">
-                    <label for="cctvLat">Latitude:</label>
-                    <input type="number" id="cctvLat" step="any" required>
-                </div>
-                <div class="form-group">
-                    <label for="cctvLng">Longitude:</label>
-                    <input type="number" id="cctvLng" step="any" required>
-                </div>
-                <div class="form-group">
-                    <label for="cctvStream">Stream URL (HLS/m3u8):</label>
-                    <input type="url" id="cctvStream" placeholder="https://example.com/stream.m3u8">
-                </div>
-                <div class="form-group">
-                    <label for="cctvDescription">Deskripsi:</label>
-                    <input type="text" id="cctvDescription" placeholder="Deskripsi CCTV">
-                </div>
-                <div class="form-group">
-                    <label for="cctvStatus">Status:</label>
-                    <select id="cctvStatus">
-                        <option value="online">Online</option>
-                        <option value="offline">Offline</option>
-                    </select>
-                </div>
-                <div class="form-buttons">
-                    <button type="button" class="cancel-btn" onclick="closeCctvModal()">Batal</button>
-                    <button type="submit" class="save-btn">Simpan</button>
-                </div>
-            </form>
+        <div class="modal-center">
+            <div class="modal-content">
+                <h2 id="modalTitle">Tambah CCTV Baru</h2>
+                <form id="cctvForm">
+                    <div class="form-group">
+                        <label for="cctvName">Nama CCTV:</label>
+                        <input type="text" id="cctvName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cctvLocation">Lokasi:</label>
+                        <input type="text" id="cctvLocation" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cctvLat">Latitude:</label>
+                        <input type="number" id="cctvLat" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cctvLng">Longitude:</label>
+                        <input type="number" id="cctvLng" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cctvStream">Stream URL:</label>
+                        <input type="url" id="cctvStream" placeholder="https://example.com/stream.m3u8">
+                    </div>
+                    <div class="form-group">
+                        <label for="cctvDescription">Deskripsi:</label>
+                        <input type="text" id="cctvDescription" placeholder="Deskripsi CCTV">
+                    </div>
+                    <div class="form-group">
+                        <label for="cctvStatus">Status:</label>
+                        <select id="cctvStatus">
+                            <option value="online">Online</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                    </div>
+                    <div class="form-buttons">
+                        <button type="button" class="cancel-btn touchable" onclick="closeCctvModal()">Batal</button>
+                        <button type="submit" class="save-btn touchable">Simpan</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -1728,9 +1007,9 @@ body::before {
         <div class="video-content">
             <div class="video-header">
                 <h3 id="videoTitle">Live Stream CCTV</h3>
-                <button class="close-video" onclick="closeVideoModal()">&times;</button>
+                <button class="close-video touchable" onclick="closeVideoModal()">&times;</button>
             </div>
-            <video id="videoPlayer" controls autoplay muted></video>
+            <video id="videoPlayer" controls autoplay muted playsinline></video>
         </div>
     </div>
 
@@ -1744,22 +1023,102 @@ body::before {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     
     <script>
-                let map;
+        let map;
         let cctvData = [];
         let markers = [];
         let currentUser = null;
         let editingCctvId = null;
         let authToken = localStorage.getItem('authToken');
+        let sidebarExpanded = false;
 
         // API Configuration
         const API_BASE = 'https://banda-aceh-cctv-monitoring-system.vercel.app/api';
+
+        // Mobile-specific functions
+        function toggleSidebar() {
+            const sidebarContent = document.getElementById('sidebarContent');
+            const toggleBtn = document.querySelector('.mobile-toggle');
+            
+            sidebarExpanded = !sidebarExpanded;
+            
+            if (sidebarExpanded) {
+                sidebarContent.classList.add('expanded');
+                toggleBtn.innerHTML = '✕';
+                // Auto-collapse after 30 seconds of inactivity
+                setTimeout(() => {
+                    if (sidebarExpanded) {
+                        toggleSidebar();
+                    }
+                }, 30000);
+            } else {
+                sidebarContent.classList.remove('expanded');
+                toggleBtn.innerHTML = '☰';
+            }
+        }
+
+        // Auto-collapse sidebar when clicking on map (mobile only)
+        function handleMapClick() {
+            if (window.innerWidth < 768 && sidebarExpanded) {
+                toggleSidebar();
+            }
+        }
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             initMap();
             checkAuthStatus();
             loadCCTVData();
             setupEventListeners();
+            setupMobileOptimizations();
         });
+
+        // Mobile optimizations
+        function setupMobileOptimizations() {
+            // Prevent zoom on input focus for iOS
+            document.addEventListener('touchstart', function() {}, {passive: true});
+            
+            // Handle orientation changes
+            window.addEventListener('orientationchange', function() {
+                setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                }, 100);
+            });
+
+            // Handle window resize
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                    // Auto-collapse sidebar on desktop resize
+                    if (window.innerWidth >= 768 && sidebarExpanded) {
+                        sidebarExpanded = true; // Force expansion on desktop
+                        document.getElementById('sidebarContent').classList.add('expanded');
+                    }
+                }, 250);
+            });
+
+            // Add touch feedback to clickable elements
+            document.addEventListener('touchstart', function(e) {
+                if (e.target.classList.contains('touchable') || 
+                    e.target.classList.contains('cctv-item')) {
+                    e.target.style.transform = 'scale(0.98)';
+                }
+            });
+
+            document.addEventListener('touchend', function(e) {
+                if (e.target.classList.contains('touchable') || 
+                    e.target.classList.contains('cctv-item')) {
+                    setTimeout(() => {
+                        e.target.style.transform = '';
+                    }, 150);
+                }
+            });
+        }
 
         // API Helper Functions
         async function apiRequest(url, options = {}) {
@@ -1810,9 +1169,39 @@ body::before {
                 updateAuthUI();
                 closeLoginModal();
                 await loadCCTVData();
-                showNotification('Login berhasil!', 'success');
+                showNotification('Login berhasil! 🎉', 'success');
+                
+                // Auto-collapse sidebar on mobile after login
+                if (window.innerWidth < 768) {
+                    setTimeout(() => {
+                        if (sidebarExpanded) toggleSidebar();
+                    }, 2000);
+                }
             } catch (error) {
                 showNotification('Login gagal: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function register(name, email, password, confirmPassword) {
+            if (password !== confirmPassword) {
+                showNotification('Password tidak cocok ❌', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const data = await apiRequest('/auth/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, email, password }),
+                });
+
+                showNotification('Pendaftaran berhasil! Silakan login. ✅', 'success');
+                closeRegisterModal();
+                showLoginModal();
+            } catch (error) {
+                showNotification('Pendaftaran gagal: ' + error.message, 'error');
             } finally {
                 showLoading(false);
             }
@@ -1825,48 +1214,13 @@ body::before {
             document.getElementById('addCctvBtn').style.display = 'none';
             updateAuthUI();
             loadCCTVData();
-            showNotification('Logout berhasil', 'info');
-        }
-
-        // Modal Functions
-        function showRegisterModal() {
-            document.getElementById('registerModal').style.display = 'block';
-            document.getElementById('registerForm').reset();
-        }
-
-        function closeRegisterModal() {
-            document.getElementById('registerModal').style.display = 'none';
-        }
-
-        async function register(name, email, password, confirmPassword) {
-            if (password !== confirmPassword) {
-                showNotification('Password dan konfirmasi password tidak cocok', 'error');
-                return;
-            }
-
-            try {
-                showLoading(true);
-                const data = await apiRequest('/auth/register', {
-                    method: 'POST',
-                    body: JSON.stringify({ name, email, password }),
-                });
-
-                showNotification('Pendaftaran berhasil! Silakan login.', 'success');
-                closeRegisterModal();
-                showLoginModal();
-            } catch (error) {
-                showNotification('Pendaftaran gagal: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
+            showNotification('Logout berhasil 👋', 'info');
         }
 
         function checkAuthStatus() {
             if (authToken) {
-                // Validate token by making a request
                 apiRequest('/cameras')
                     .then(() => {
-                        // Token is valid, get user info from token
                         try {
                             const payload = JSON.parse(atob(authToken.split('.')[1]));
                             currentUser = { 
@@ -1885,6 +1239,21 @@ body::before {
                     .catch(() => {
                         logout();
                     });
+            }
+        }
+
+        function updateAuthUI() {
+            const authButtons = document.getElementById('authButtons');
+            const loggedInUser = document.getElementById('loggedInUser');
+
+            if (currentUser) {
+                authButtons.style.display = 'none';
+                loggedInUser.style.display = 'block';
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userRole').textContent = currentUser.role.toUpperCase();
+            } else {
+                authButtons.style.display = 'flex';
+                loggedInUser.style.display = 'none';
             }
         }
 
@@ -1915,66 +1284,7 @@ body::before {
                 addMarkersToMap();
             } catch (error) {
                 console.error('Failed to load CCTV data:', error);
-                showNotification('Gagal memuat data CCTV', 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async function saveCctv() {
-            try {
-                const formData = {
-                    name: document.getElementById('cctvName').value,
-                    location: document.getElementById('cctvLocation').value,
-                    latitude: parseFloat(document.getElementById('cctvLat').value),
-                    longitude: parseFloat(document.getElementById('cctvLng').value),
-                    streamUrl: document.getElementById('cctvStream').value,
-                    status: document.getElementById('cctvStatus').value,
-                    description: document.getElementById('cctvDescription').value,
-                };
-
-                showLoading(true);
-
-                if (editingCctvId) {
-                    // Update existing CCTV
-                    await apiRequest(`/cameras/${editingCctvId}`, {
-                        method: 'PUT',
-                        body: JSON.stringify(formData),
-                    });
-                    showNotification('CCTV berhasil diperbarui!', 'success');
-                } else {
-                    // Add new CCTV
-                    await apiRequest('/cameras', {
-                        method: 'POST',
-                        body: JSON.stringify(formData),
-                    });
-                    showNotification('CCTV berhasil ditambahkan!', 'success');
-                }
-
-                await loadCCTVData();
-                closeCctvModal();
-            } catch (error) {
-                showNotification('Gagal menyimpan CCTV: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async function deleteCctv(id) {
-            if (!confirm('Apakah Anda yakin ingin menghapus CCTV ini?')) {
-                return;
-            }
-
-            try {
-                showLoading(true);
-                await apiRequest(`/cameras/${id}`, {
-                    method: 'DELETE',
-                });
-
-                await loadCCTVData();
-                showNotification('CCTV berhasil dihapus!', 'success');
-            } catch (error) {
-                showNotification('Gagal menghapus CCTV: ' + error.message, 'error');
+                showNotification('Gagal memuat data CCTV 📡', 'error');
             } finally {
                 showLoading(false);
             }
@@ -1982,37 +1292,83 @@ body::before {
 
         // Initialize Leaflet map
         function initMap() {
-            // Center on Banda Aceh
-            map = L.map('map').setView([5.5483, 95.3238], 13);
+            map = L.map('map', {
+                center: [5.5483, 95.3238],
+                zoom: 13,
+                zoomControl: true,
+                attributionControl: false
+            });
 
             // Add tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            // Handle map clicks for adding new CCTV (admin only)
+            // Handle map clicks
             map.on('click', function(e) {
+                handleMapClick();
                 if (currentUser && currentUser.role === 'admin') {
                     document.getElementById('cctvLat').value = e.latlng.lat.toFixed(6);
                     document.getElementById('cctvLng').value = e.latlng.lng.toFixed(6);
                 }
             });
+
+            // Add location control for mobile
+            if ('geolocation' in navigator) {
+                const locationBtn = L.control({position: 'bottomright'});
+                locationBtn.onAdd = function(map) {
+                    const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                    div.innerHTML = '<button style="background: white; border: none; padding: 8px; cursor: pointer; font-size: 16px;" onclick="getCurrentLocation()" title="Lokasi Saya">📍</button>';
+                    return div;
+                };
+                locationBtn.addTo(map);
+            }
+        }
+
+        // Get current location
+        function getCurrentLocation() {
+            if ('geolocation' in navigator) {
+                showLoading(true);
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        map.setView([lat, lng], 15);
+                        
+                        L.marker([lat, lng])
+                            .addTo(map)
+                            .bindPopup('📍 Lokasi Anda')
+                            .openPopup();
+                        
+                        showLoading(false);
+                        showNotification('Lokasi ditemukan! 📍', 'success');
+                    },
+                    function(error) {
+                        showLoading(false);
+                        showNotification('Gagal mendapatkan lokasi 📍', 'error');
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            }
         }
 
         // Add markers to map
         function addMarkersToMap() {
-            // Clear existing markers
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
 
             cctvData.forEach(cctv => {
-                const iconColor = cctv.status === 'online' ? 'green' : 'red';
+                const iconColor = cctv.status === 'online' ? '#28a745' : '#dc3545';
                 
                 const customIcon = L.divIcon({
                     className: 'custom-marker',
-                    html: `<div style="background: ${iconColor}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>`,
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10]
+                    html: `<div style="background: ${iconColor}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
                 });
 
                 const marker = L.marker([cctv.lat, cctv.lng], { icon: customIcon }).addTo(map);
@@ -2020,11 +1376,11 @@ body::before {
                 const popupContent = `
                     <div class="custom-popup">
                         <h3>${cctv.name}</h3>
-                        <p><strong>Lokasi:</strong> ${cctv.location}</p>
-                        <p><strong>Status:</strong> <span style="color: ${iconColor}; font-weight: bold;">${cctv.status.toUpperCase()}</span></p>
+                        <p><strong>📍</strong> ${cctv.location}</p>
+                        <p><strong>Status:</strong> <span style="color: ${iconColor}; font-weight: bold;">${cctv.status === 'online' ? '🟢 Online' : '🔴 Offline'}</span></p>
                         ${cctv.status === 'online' && cctv.streamUrl ? 
-                            `<button class="watch-btn" onclick="playVideo('${cctv.id}')">🔴 Tonton Live</button>` : 
-                            '<p style="color: red;">Stream tidak tersedia</p>'
+                            `<button class="watch-btn touchable" onclick="playVideo('${cctv.id}')">📹 Tonton Live</button>` : 
+                            '<p style="color: #dc3545; font-size: 0.8rem;">Stream tidak tersedia</p>'
                         }
                     </div>
                 `;
@@ -2036,12 +1392,17 @@ body::before {
             });
         }
 
-        // Render CCTV list in sidebar
+        // Render CCTV list
         function renderCctvList() {
             const listContainer = document.getElementById('cctvList');
             
             if (!authToken) {
-                listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Silakan login untuk melihat daftar CCTV</div>';
+                listContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666; font-size: 0.9rem;">
+                        <div style="font-size: 2rem; margin-bottom: 8px;">🔒</div>
+                        <div>Silakan login untuk melihat daftar CCTV</div>
+                    </div>
+                `;
                 return;
             }
 
@@ -2055,65 +1416,79 @@ body::before {
                 );
             }
 
+            if (filteredData.length === 0) {
+                listContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666; font-size: 0.9rem;">
+                        <div style="font-size: 2rem; margin-bottom: 8px;">🔍</div>
+                        <div>Tidak ada CCTV yang ditemukan</div>
+                    </div>
+                `;
+                return;
+            }
+
             listContainer.innerHTML = filteredData.map(cctv => `
-                <div class="cctv-item" onclick="selectCctv('${cctv.id}')" id="cctv-item-${cctv.id}">
+                <div class="cctv-item touchable" onclick="selectCctv('${cctv.id}')" id="cctv-item-${cctv.id}">
                     <div class="cctv-name">${cctv.name}</div>
-                    <div class="cctv-location">${cctv.location}</div>
+                    <div class="cctv-location">📍 ${cctv.location}</div>
                     <span class="cctv-status status-${cctv.status}">
-                        ${cctv.status}
+                        ${cctv.status === 'online' ? '🟢' : '🔴'} ${cctv.status}
                         ${cctv.status === 'online' && cctv.streamUrl ? '<span class="stream-indicator stream-live"></span>' : ''}
                     </span>
                     ${currentUser && currentUser.role === 'admin' ? `
                         <div class="admin-controls" style="display: block;">
-                            <button class="edit-btn" onclick="event.stopPropagation(); editCctv('${cctv.id}')">Edit</button>
-                            <button class="delete-btn" onclick="event.stopPropagation(); deleteCctv('${cctv.id}')">Hapus</button>
+                            <button class="edit-btn touchable" onclick="event.stopPropagation(); editCctv('${cctv.id}')">✏️ Edit</button>
+                            <button class="delete-btn touchable" onclick="event.stopPropagation(); deleteCctv('${cctv.id}')">🗑️ Hapus</button>
                         </div>
                     ` : ''}
                 </div>
             `).join('');
+
+            // Show count info
+            if (searchQuery) {
+                const countInfo = document.createElement('div');
+                countInfo.style.cssText = 'padding: 8px 12px; font-size: 0.8rem; color: #666; text-align: center; background: rgba(255,255,255,0.5); border-radius: 8px; margin-bottom: 8px;';
+                countInfo.textContent = `📊 Menampilkan ${filteredData.length} dari ${cctvData.length} CCTV`;
+                listContainer.insertBefore(countInfo, listContainer.firstChild);
+            }
         }
 
         // Select CCTV
         function selectCctv(id) {
-            // Remove active class from all items
             document.querySelectorAll('.cctv-item').forEach(item => {
                 item.classList.remove('active');
             });
 
-            // Add active class to selected item
             const selectedItem = document.getElementById(`cctv-item-${id}`);
             if (selectedItem) {
                 selectedItem.classList.add('active');
             }
 
-            // Center map on selected CCTV
             const cctv = cctvData.find(c => c.id === id);
             if (cctv) {
                 map.setView([cctv.lat, cctv.lng], 16);
                 
-                // Open popup for the marker
                 const marker = markers.find(m => 
-                    m.getLatLng().lat === cctv.lat && m.getLatLng().lng === cctv.lng
+                    Math.abs(m.getLatLng().lat - cctv.lat) < 0.0001 && 
+                    Math.abs(m.getLatLng().lng - cctv.lng) < 0.0001
                 );
                 if (marker) {
                     marker.openPopup();
                 }
+
+                // Auto-collapse sidebar on mobile after selection
+                if (window.innerWidth < 768 && sidebarExpanded) {
+                    setTimeout(() => toggleSidebar(), 1000);
+                }
             }
         }
-
-    function switchToRegister() {
-        closeLoginModal();
-        showRegisterModal();
-    }
-
-    function switchToLogin() {
-        closeRegisterModal();
-        showLoginModal();
-    }
 
         // Modal Functions
         function showLoginModal() {
             document.getElementById('loginModal').style.display = 'block';
+            // Focus on first input after modal opens
+            setTimeout(() => {
+                document.getElementById('loginEmail').focus();
+            }, 300);
         }
 
         function closeLoginModal() {
@@ -2122,15 +1497,29 @@ body::before {
 
         function showRegisterModal() {
             document.getElementById('registerModal').style.display = 'block';
+            document.getElementById('registerForm').reset();
+            setTimeout(() => {
+                document.getElementById('registerName').focus();
+            }, 300);
         }
 
         function closeRegisterModal() {
             document.getElementById('registerModal').style.display = 'none';
         }
 
+        function switchToRegister() {
+            closeLoginModal();
+            showRegisterModal();
+        }
+
+        function switchToLogin() {
+            closeRegisterModal();
+            showLoginModal();
+        }
+
         function showAddCctvModal() {
             if (!currentUser || currentUser.role !== 'admin') {
-                showNotification('Akses ditolak! Hanya admin yang dapat menambah CCTV.', 'error');
+                showNotification('Hanya admin yang dapat menambah CCTV 🔒', 'error');
                 return;
             }
 
@@ -2138,11 +1527,14 @@ body::before {
             document.getElementById('modalTitle').textContent = 'Tambah CCTV Baru';
             document.getElementById('cctvForm').reset();
             document.getElementById('cctvModal').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('cctvName').focus();
+            }, 300);
         }
 
         function editCctv(id) {
             if (!currentUser || currentUser.role !== 'admin') {
-                showNotification('Akses ditolak! Hanya admin yang dapat mengedit CCTV.', 'error');
+                showNotification('Hanya admin yang dapat mengedit CCTV 🔒', 'error');
                 return;
             }
 
@@ -2166,18 +1558,61 @@ body::before {
             editingCctvId = null;
         }
 
-        function updateAuthUI() {
-            const authButtons = document.getElementById('authButtons');
-            const loggedInUser = document.getElementById('loggedInUser');
+        async function saveCctv() {
+            try {
+                const formData = {
+                    name: document.getElementById('cctvName').value,
+                    location: document.getElementById('cctvLocation').value,
+                    latitude: parseFloat(document.getElementById('cctvLat').value),
+                    longitude: parseFloat(document.getElementById('cctvLng').value),
+                    streamUrl: document.getElementById('cctvStream').value,
+                    status: document.getElementById('cctvStatus').value,
+                    description: document.getElementById('cctvDescription').value,
+                };
 
-            if (currentUser) {
-                authButtons.style.display = 'none';
-                loggedInUser.style.display = 'block';
-                document.getElementById('userName').textContent = currentUser.name;
-                document.getElementById('userRole').textContent = currentUser.role.toUpperCase();
-            } else {
-                authButtons.style.display = 'flex';
-                loggedInUser.style.display = 'none';
+                showLoading(true);
+
+                if (editingCctvId) {
+                    await apiRequest(`/cameras/${editingCctvId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(formData),
+                    });
+                    showNotification('CCTV berhasil diperbarui! ✅', 'success');
+                } else {
+                    await apiRequest('/cameras', {
+                        method: 'POST',
+                        body: JSON.stringify(formData),
+                    });
+                    showNotification('CCTV berhasil ditambahkan! 🎉', 'success');
+                }
+
+                await loadCCTVData();
+                closeCctvModal();
+            } catch (error) {
+                showNotification('Gagal menyimpan: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function deleteCctv(id) {
+            // Use custom confirm for mobile
+            if (!confirm('Apakah Anda yakin ingin menghapus CCTV ini? 🗑️')) {
+                return;
+            }
+
+            try {
+                showLoading(true);
+                await apiRequest(`/cameras/${id}`, {
+                    method: 'DELETE',
+                });
+
+                await loadCCTVData();
+                showNotification('CCTV berhasil dihapus! ✅', 'success');
+            } catch (error) {
+                showNotification('Gagal menghapus: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
             }
         }
 
@@ -2185,22 +1620,19 @@ body::before {
         function playVideo(id) {
             const cctv = cctvData.find(c => c.id === id);
             if (!cctv || !cctv.streamUrl) {
-                showNotification('Stream tidak tersedia untuk CCTV ini.', 'error');
+                showNotification('Stream tidak tersedia 📹', 'error');
                 return;
             }
 
-            document.getElementById('videoTitle').textContent = `🔴 Live Stream - ${cctv.name}`;
+            document.getElementById('videoTitle').textContent = `📹 Live - ${cctv.name}`;
             document.getElementById('videoModal').style.display = 'block';
 
             const video = document.getElementById('videoPlayer');
             
-            // Reset video element
             video.pause();
             video.src = '';
             
-            // Check if HLS is supported
             if (Hls.isSupported()) {
-                // Destroy existing HLS instance if any
                 if (video.hlsInstance) {
                     video.hlsInstance.destroy();
                 }
@@ -2216,43 +1648,36 @@ body::before {
                 hls.attachMedia(video);
                 
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    console.log('Stream manifest loaded for:', cctv.name);
                     video.play().catch(e => {
-                        console.log('Autoplay prevented:', e);
-                        showNotification('Klik tombol play untuk memulai stream', 'info');
+                        showNotification('Tap tombol play untuk memulai 📹', 'info');
                     });
                 });
 
                 hls.on(Hls.Events.ERROR, function(event, data) {
-                    console.error('HLS Error:', data);
                     if (data.fatal) {
-                        showNotification('Gagal memuat stream. Mencoba reconnect...', 'error');
+                        showNotification('Stream error, reconnecting... 🔄', 'error');
                         setTimeout(() => {
                             hls.loadSource(cctv.streamUrl);
                         }, 3000);
                     }
                 });
                 
-                // Store hls instance for cleanup
                 video.hlsInstance = hls;
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Native HLS support (Safari)
                 video.src = cctv.streamUrl;
                 video.addEventListener('loadedmetadata', function() {
                     video.play().catch(e => {
-                        console.log('Autoplay prevented:', e);
-                        showNotification('Klik tombol play untuk memulai stream', 'info');
+                        showNotification('Tap tombol play untuk memulai 📹', 'info');
                     });
                 });
             } else {
-                showNotification('Browser Anda tidak mendukung streaming HLS.', 'error');
+                showNotification('Browser tidak mendukung streaming HLS 📹', 'error');
             }
         }
 
         function closeVideoModal() {
             const video = document.getElementById('videoPlayer');
             
-            // Cleanup HLS instance
             if (video.hlsInstance) {
                 video.hlsInstance.destroy();
                 video.hlsInstance = null;
@@ -2263,9 +1688,162 @@ body::before {
             document.getElementById('videoModal').style.display = 'none';
         }
 
-        // Search functionality
+        // Search and filter functions
         function searchCCTV() {
             renderCctvList();
+        }
+
+        function toggleFilter() {
+            // Mobile-optimized filter
+            const filterModal = document.createElement('div');
+            filterModal.className = 'modal';
+            filterModal.style.display = 'block';
+            
+            filterModal.innerHTML = `
+                <div class="modal-center">
+                    <div class="modal-content">
+                        <h2>Filter CCTV 🔍</h2>
+                        <div class="form-group">
+                            <label>Status:</label>
+                            <select id="statusFilter" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid rgba(102, 126, 234, 0.2); font-size: 16px;">
+                                <option value="all">Semua Status</option>
+                                <option value="online">🟢 Online</option>
+                                <option value="offline">🔴 Offline</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Area:</label>
+                            <select id="locationFilter" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid rgba(102, 126, 234, 0.2); font-size: 16px;">
+                                <option value="all">Semua Area</option>
+                                <option value="BAITURRAHMAN">Baiturrahman</option>
+                                <option value="KUTA ALAM">Kuta Alam</option>
+                                <option value="BANDA RAYA">Banda Raya</option>
+                                <option value="JAYA BARU">Jaya Baru</option>
+                                <option value="LUENG BATA">Lueng Bata</option>
+                            </select>
+                        </div>
+                        <div class="form-buttons">
+                            <button class="cancel-btn touchable" onclick="closeFilterModal()">Batal</button>
+                            <button class="save-btn touchable" onclick="applyFilters()">Terapkan Filter</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(filterModal);
+            
+            window.closeFilterModal = function() {
+                filterModal.remove();
+            };
+            
+            window.applyFilters = function() {
+                const statusFilter = document.getElementById('statusFilter').value;
+                const locationFilter = document.getElementById('locationFilter').value;
+                const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+
+                let filteredData = cctvData.filter(cctv => {
+                    const matchSearch = !searchQuery || 
+                        cctv.name.toLowerCase().includes(searchQuery) ||
+                        cctv.location.toLowerCase().includes(searchQuery);
+                    
+                    const matchStatus = statusFilter === 'all' || cctv.status === statusFilter;
+                    const matchLocation = locationFilter === 'all' || 
+                        cctv.location.toUpperCase().includes(locationFilter);
+
+                    return matchSearch && matchStatus && matchLocation;
+                });
+
+                renderFilteredList(filteredData);
+                updateMapMarkers(filteredData);
+                filterModal.remove();
+                showNotification(`Filter diterapkan: ${filteredData.length} CCTV 🔍`, 'info');
+            };
+        }
+
+        function renderFilteredList(data) {
+            const listContainer = document.getElementById('cctvList');
+            
+            if (data.length === 0) {
+                listContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666; font-size: 0.9rem;">
+                        <div style="font-size: 2rem; margin-bottom: 8px;">🚫</div>
+                        <div>Tidak ada CCTV yang cocok dengan filter</div>
+                        <button onclick="clearAllFilters()" style="margin-top: 10px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 20px; cursor: pointer;">Reset Filter</button>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = data.map(cctv => `
+                <div class="cctv-item touchable" onclick="selectCctv('${cctv.id}')" id="cctv-item-${cctv.id}">
+                    <div class="cctv-name">${cctv.name}</div>
+                    <div class="cctv-location">📍 ${cctv.location}</div>
+                    <span class="cctv-status status-${cctv.status}">
+                        ${cctv.status === 'online' ? '🟢' : '🔴'} ${cctv.status}
+                        ${cctv.status === 'online' && cctv.streamUrl ? '<span class="stream-indicator stream-live"></span>' : ''}
+                    </span>
+                    ${currentUser && currentUser.role === 'admin' ? `
+                        <div class="admin-controls" style="display: block;">
+                            <button class="edit-btn touchable" onclick="event.stopPropagation(); editCctv('${cctv.id}')">✏️ Edit</button>
+                            <button class="delete-btn touchable" onclick="event.stopPropagation(); deleteCctv('${cctv.id}')">🗑️ Hapus</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+
+            // Show filter results count
+            const countInfo = document.createElement('div');
+            countInfo.style.cssText = 'padding: 8px 12px; font-size: 0.8rem; color: #667eea; text-align: center; background: rgba(102, 126, 234, 0.1); border-radius: 8px; margin-bottom: 8px; font-weight: 600;';
+            countInfo.innerHTML = `🎯 ${data.length} dari ${cctvData.length} CCTV <button onclick="clearAllFilters()" style="margin-left: 8px; padding: 2px 8px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 0.7rem; cursor: pointer;">Reset</button>`;
+            listContainer.insertBefore(countInfo, listContainer.firstChild);
+        }
+
+        function updateMapMarkers(filteredData) {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+            
+            filteredData.forEach(cctv => {
+                const iconColor = cctv.status === 'online' ? '#28a745' : '#dc3545';
+                
+                const customIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="background: ${iconColor}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [16, 16],
+                    iconAnchor: [8, 8]
+                });
+
+                const marker = L.marker([cctv.lat, cctv.lng], { icon: customIcon }).addTo(map);
+
+                const popupContent = `
+                    <div class="custom-popup">
+                        <h3>${cctv.name}</h3>
+                        <p><strong>📍</strong> ${cctv.location}</p>
+                        <p><strong>Status:</strong> <span style="color: ${iconColor}; font-weight: bold;">${cctv.status === 'online' ? '🟢 Online' : '🔴 Offline'}</span></p>
+                        ${cctv.status === 'online' && cctv.streamUrl ? 
+                            `<button class="watch-btn touchable" onclick="playVideo('${cctv.id}')">📹 Tonton Live</button>` : 
+                            '<p style="color: #dc3545; font-size: 0.8rem;">Stream tidak tersedia</p>'
+                        }
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                marker.on('click', () => selectCctv(cctv.id));
+                
+                markers.push(marker);
+            });
+
+            // Fit map to show all filtered markers
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        function clearAllFilters() {
+            document.getElementById('searchInput').value = '';
+            renderCctvList();
+            addMarkersToMap();
+            showNotification('Filter direset 🔄', 'info');
         }
 
         // Loading functions
@@ -2273,7 +1851,43 @@ body::before {
             document.getElementById('loadingModal').style.display = show ? 'block' : 'none';
         }
 
-        // Event Listeners
+        // Notification system - mobile optimized
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            const existing = document.querySelector('.notification');
+            if (existing) {
+                existing.remove();
+            }
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Auto remove after 4 seconds
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    notification.style.animation = 'slideDown 0.3s ease reverse';
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            document.body.removeChild(notification);
+                        }
+                    }, 300);
+                }
+            }, 4000);
+
+            // Allow manual dismiss by tapping
+            notification.addEventListener('click', () => {
+                notification.style.animation = 'slideDown 0.3s ease reverse';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            });
+        }
+
         // Event Listeners
         function setupEventListeners() {
             // Login form
@@ -2300,8 +1914,12 @@ body::before {
                 saveCctv();
             });
 
-            // Search input
-            document.getElementById('searchInput').addEventListener('input', searchCCTV);
+            // Search input with debounce for better mobile performance
+            let searchTimeout;
+            document.getElementById('searchInput').addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(searchCCTV, 300);
+            });
 
             // Close modals when clicking outside
             document.getElementById('cctvModal').addEventListener('click', function(e) {
@@ -2320,310 +1938,244 @@ body::before {
                 if (e.target === this) closeRegisterModal();
             });
 
-    // Keyboard shortcuts
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeCctvModal();
-            closeVideoModal();
-            closeLoginModal();
-            closeRegisterModal();
-        }
-    });
-}
-        // Filter functionality
-        function toggleFilter() {
-            const filterMenu = document.createElement('div');
-            filterMenu.style.cssText = `
-                position: absolute;
-                top: 60px;
-                right: 20px;
-                background: white;
-                padding: 20px;
-                border-radius: 15px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-                z-index: 1500;
-                min-width: 200px;
-            `;
-            
-            filterMenu.innerHTML = `
-                <h4 style="margin-bottom: 15px;">Filter CCTV</h4>
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; margin-bottom: 5px;">Status:</label>
-                    <select id="statusFilter" style="width: 100%; padding: 5px; border-radius: 5px;">
-                        <option value="all">Semua</option>
-                        <option value="online">Online</option>
-                        <option value="offline">Offline</option>
-                    </select>
-                </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px;">Kecamatan:</label>
-                    <select id="locationFilter" style="width: 100%; padding: 5px; border-radius: 5px;">
-                        <option value="all">Semua</option>
-                        <option value="BAITURRAHMAN">Baiturrahman</option>
-                        <option value="KUTA ALAM">Kuta Alam</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="applyFilters()" style="flex: 1; padding: 8px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">Terapkan</button>
-                    <button onclick="clearFilters()" style="flex: 1; padding: 8px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">Reset</button>
-                </div>
-            `;
-
-            // Remove existing filter menu
-            const existing = document.querySelector('.filter-menu');
-            if (existing) {
-                existing.remove();
-                return;
-            }
-
-            filterMenu.className = 'filter-menu';
-            document.querySelector('.search-container').appendChild(filterMenu);
-
-            // Close when clicking outside
-            setTimeout(() => {
-                document.addEventListener('click', function closeFilter(e) {
-                    if (!filterMenu.contains(e.target) && !e.target.classList.contains('filter-btn')) {
-                        filterMenu.remove();
-                        document.removeEventListener('click', closeFilter);
-                    }
-                });
-            }, 100);
-        }
-
-        // Filter functions
-        function applyFilters() {
-            const statusFilter = document.getElementById('statusFilter').value;
-            const locationFilter = document.getElementById('locationFilter').value;
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-
-            let filteredData = cctvData.filter(cctv => {
-                const matchSearch = !searchQuery || 
-                    cctv.name.toLowerCase().includes(searchQuery) ||
-                    cctv.location.toLowerCase().includes(searchQuery);
-                
-                const matchStatus = statusFilter === 'all' || cctv.status === statusFilter;
-                const matchLocation = locationFilter === 'all' || 
-                    cctv.location.toUpperCase().includes(locationFilter);
-
-                return matchSearch && matchStatus && matchLocation;
-            });
-
-            renderFilteredList(filteredData);
-            updateMapMarkers(filteredData);
-            
-            document.querySelector('.filter-menu').remove();
-        }
-
-        function clearFilters() {
-            document.getElementById('searchInput').value = '';
-            renderCctvList();
-            addMarkersToMap();
-            document.querySelector('.filter-menu').remove();
-        }
-
-        function renderFilteredList(data) {
-            const listContainer = document.getElementById('cctvList');
-            
-            listContainer.innerHTML = data.map(cctv => `
-                <div class="cctv-item" onclick="selectCctv('${cctv.id}')" id="cctv-item-${cctv.id}">
-                    <div class="cctv-name">${cctv.name}</div>
-                    <div class="cctv-location">${cctv.location}</div>
-                    <span class="cctv-status status-${cctv.status}">
-                        ${cctv.status}
-                        ${cctv.status === 'online' && cctv.streamUrl ? '<span class="stream-indicator stream-live"></span>' : ''}
-                    </span>
-                    ${currentUser && currentUser.role === 'admin' ? `
-                        <div class="admin-controls" style="display: block;">
-                            <button class="edit-btn" onclick="event.stopPropagation(); editCctv('${cctv.id}')">Edit</button>
-                            <button class="delete-btn" onclick="event.stopPropagation(); deleteCctv('${cctv.id}')">Hapus</button>
-                        </div>
-                    ` : ''}
-                </div>
-            `).join('');
-
-            // Show count
-            const countInfo = document.createElement('div');
-            countInfo.style.cssText = 'padding: 10px; font-size: 0.85rem; color: #666; text-align: center;';
-            countInfo.textContent = `Menampilkan ${data.length} dari ${cctvData.length} CCTV`;
-            listContainer.insertBefore(countInfo, listContainer.firstChild);
-        }
-
-        function updateMapMarkers(filteredData) {
-            // Hide all markers first
-            markers.forEach(marker => map.removeLayer(marker));
-            
-            // Show only filtered markers
-            const filteredMarkers = [];
-            filteredData.forEach(cctv => {
-                const iconColor = cctv.status === 'online' ? 'green' : 'red';
-                
-                const customIcon = L.divIcon({
-                    className: 'custom-marker',
-                    html: `<div style="background: ${iconColor}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);"></div>`,
-                    iconSize: [20, 20],
-                    iconAnchor: [10, 10]
-                });
-
-                const marker = L.marker([cctv.lat, cctv.lng], { icon: customIcon }).addTo(map);
-
-                const popupContent = `
-                    <div class="custom-popup">
-                        <h3>${cctv.name}</h3>
-                        <p><strong>Lokasi:</strong> ${cctv.location}</p>
-                        <p><strong>Status:</strong> <span style="color: ${iconColor}; font-weight: bold;">${cctv.status.toUpperCase()}</span></p>
-                        ${cctv.status === 'online' && cctv.streamUrl ? 
-                            `<button class="watch-btn" onclick="playVideo('${cctv.id}')">🔴 Tonton Live</button>` : 
-                            '<p style="color: red;">Stream tidak tersedia</p>'
-                        }
-                    </div>
-                `;
-
-                marker.bindPopup(popupContent);
-                marker.on('click', () => selectCctv(cctv.id));
-                
-                filteredMarkers.push(marker);
-            });
-
-            markers = filteredMarkers;
-        }
-
-        // Notification system
-        function showNotification(message, type = 'info') {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
-                color: white;
-                padding: 15px 20px;
-                border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                z-index: 3000;
-                font-weight: bold;
-                animation: slideInRight 0.3s ease;
-                max-width: 300px;
-            `;
-            notification.textContent = message;
-
-            // Add animation keyframes
-            if (!document.querySelector('#notification-styles')) {
-                const style = document.createElement('style');
-                style.id = 'notification-styles';
-                style.textContent = `
-                    @keyframes slideInRight {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                    @keyframes slideOutRight {
-                        from { transform: translateX(0); opacity: 1; }
-                        to { transform: translateX(100%); opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-
-            document.body.appendChild(notification);
-
-            // Auto remove after 4 seconds
-            setTimeout(() => {
-                notification.style.animation = 'slideOutRight 0.3s ease';
-                setTimeout(() => {
-                    if (document.body.contains(notification)) {
-                        document.body.removeChild(notification);
-                    }
-                }, 300);
-            }, 4000);
-        }
-
-        // Map controls enhancement
-        function addMapControls() {
-            // Add custom zoom control
-            const zoomToAllButton = L.control({position: 'topleft'});
-            zoomToAllButton.onAdd = function(map) {
-                const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-                div.innerHTML = '🏠';
-                div.style.backgroundColor = 'white';
-                div.style.width = '30px';
-                div.style.height = '30px';
-                div.style.lineHeight = '30px';
-                div.style.textAlign = 'center';
-                div.style.cursor = 'pointer';
-                div.title = 'Zoom ke semua CCTV';
-                
-                div.onclick = function() {
-                    if (cctvData.length > 0) {
-                        const group = new L.featureGroup(markers);
-                        map.fitBounds(group.getBounds().pad(0.1));
-                    }
-                };
-                
-                return div;
-            };
-            zoomToAllButton.addTo(map);
-        }
-
-        // Initialize map controls after map is ready
-        setTimeout(addMapControls, 1000);
-
-        // Stream status checker
-        async function checkStreamStatus() {
-            if (!authToken || !currentUser || currentUser.role !== 'admin') return;
-
-            cctvData.forEach(async (cctv, index) => {
-                if (cctv.streamUrl) {
-                    try {
-                        const response = await fetch(cctv.streamUrl, { method: 'HEAD' });
-                        const newStatus = response.ok ? 'online' : 'offline';
-                        
-                        if (cctvData[index].status !== newStatus) {
-                            cctvData[index].status = newStatus;
-                            
-                            // Update in database
-                            await apiRequest(`/cameras/${cctv.id}`, {
-                                method: 'PUT',
-                                body: JSON.stringify({
-                                    ...cctv,
-                                    latitude: cctv.lat,
-                                    longitude: cctv.lng,
-                                    status: newStatus
-                                }),
-                            });
-                        }
-                    } catch (error) {
-                        console.log(`Stream check failed for ${cctv.name}:`, error);
-                        // Keep current status on error
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeCctvModal();
+                    closeVideoModal();
+                    closeLoginModal();
+                    closeRegisterModal();
+                    // Close filter modal if exists
+                    const filterModal = document.querySelector('.modal[style*="display: block"]');
+                    if (filterModal && window.closeFilterModal) {
+                        window.closeFilterModal();
                     }
                 }
             });
-            
-            renderCctvList();
-            addMarkersToMap();
-        }
 
-        // Check stream status every 5 minutes (only for admin)
-        setInterval(checkStreamStatus, 300000);
+            // Prevent form submission when pressing enter on search
+            document.getElementById('searchInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchCCTV();
+                    this.blur(); // Remove focus to hide mobile keyboard
+                }
+            });
 
-        // Welcome message
-        setTimeout(() => {
-            if (!authToken) {
-                showNotification('🏙️ Selamat datang di Sistem CCTV Monitoring Banda Aceh! Silakan login untuk mengakses.', 'info');
-            } else {
-                showNotification('🏙️ Selamat datang kembali di Sistem CCTV Monitoring Banda Aceh!', 'info');
+            // Handle back button on mobile
+            if (window.history && window.history.pushState) {
+                window.addEventListener('popstate', function() {
+                    // Close any open modals
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.style.display = 'none';
+                    });
+                    document.querySelectorAll('.video-modal').forEach(modal => {
+                        modal.style.display = 'none';
+                    });
+                    closeVideoModal();
+                });
             }
-        }, 1000);
-
-        // Performance monitoring
-        function logPerformance() {
-            console.log('🎯 CCTV Monitoring System loaded successfully');
-            console.log(`📊 Total CCTV: ${cctvData.length}`);
-            console.log(`✅ Online CCTV: ${cctvData.filter(c => c.status === 'online').length}`);
-            console.log(`❌ Offline CCTV: ${cctvData.filter(c => c.status === 'offline').length}`);
-            console.log('🔗 Database integration active');
         }
 
-        setTimeout(logPerformance, 2000);
+        // Performance optimizations for mobile
+        function optimizeForMobile() {
+            // Lazy load CCTV items for better performance
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            // Observe CCTV items after they're created
+            setTimeout(() => {
+                document.querySelectorAll('.cctv-item').forEach(item => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(20px)';
+                    item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    observer.observe(item);
+                });
+            }, 1000);
+
+            // Add pull-to-refresh functionality
+            let startY = 0;
+            let pullDistance = 0;
+            const threshold = 100;
+            let isPulling = false;
+
+            const cctvList = document.getElementById('cctvList');
+            
+            cctvList.addEventListener('touchstart', function(e) {
+                if (cctvList.scrollTop === 0) {
+                    startY = e.touches[0].clientY;
+                    isPulling = true;
+                }
+            });
+
+            cctvList.addEventListener('touchmove', function(e) {
+                if (isPulling && cctvList.scrollTop === 0) {
+                    pullDistance = e.touches[0].clientY - startY;
+                    if (pullDistance > 0) {
+                        cctvList.style.transform = `translateY(${Math.min(pullDistance / 2, threshold / 2)}px)`;
+                        if (pullDistance > threshold) {
+                            cctvList.style.background = 'rgba(40, 167, 69, 0.1)';
+                        }
+                    }
+                }
+            });
+
+            cctvList.addEventListener('touchend', function() {
+                if (isPulling && pullDistance > threshold) {
+                    showNotification('Memuat ulang data... 🔄', 'info');
+                    loadCCTVData();
+                }
+                cctvList.style.transform = '';
+                cctvList.style.background = '';
+                isPulling = false;
+                pullDistance = 0;
+            });
+        }
+
+        // Stream status checker with mobile optimization
+        async function checkStreamStatus() {
+            if (!authToken || !currentUser || currentUser.role !== 'admin') return;
+            if (document.hidden) return; // Don't check when app is in background
+
+            const onlineCctvs = cctvData.filter(cctv => cctv.status === 'online' && cctv.streamUrl);
+            let updates = 0;
+
+            // Check only a few streams at a time to avoid overloading mobile network
+            const batchSize = 3;
+            for (let i = 0; i < onlineCctvs.length; i += batchSize) {
+                const batch = onlineCctvs.slice(i, i + batchSize);
+                
+                await Promise.all(batch.map(async (cctv) => {
+                    try {
+                        const response = await fetch(cctv.streamUrl, { 
+                            method: 'HEAD',
+                            signal: AbortSignal.timeout(5000) // 5 second timeout
+                        });
+                        const newStatus = response.ok ? 'online' : 'offline';
+                        
+                        const cctvIndex = cctvData.findIndex(c => c.id === cctv.id);
+                        if (cctvIndex !== -1 && cctvData[cctvIndex].status !== newStatus) {
+                            cctvData[cctvIndex].status = newStatus;
+                            updates++;
+                        }
+                    } catch (error) {
+                        // Keep current status on error
+                        console.log(`Stream check failed for ${cctv.name}:`, error.message);
+                    }
+                }));
+
+                // Small delay between batches
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            if (updates > 0) {
+                renderCctvList();
+                addMarkersToMap();
+                showNotification(`Status ${updates} CCTV diperbarui 🔄`, 'info');
+            }
+        }
+
+        // Check stream status every 10 minutes (less frequent for mobile)
+        setInterval(checkStreamStatus, 600000);
+
+        // Initialize everything when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if device is mobile
+            const isMobile = window.innerWidth < 768;
+            
+            if (isMobile) {
+                // Expand sidebar by default on first load for mobile
+                setTimeout(() => {
+                    if (!sidebarExpanded) {
+                        toggleSidebar();
+                        // Welcome message for mobile users
+                        setTimeout(() => {
+                            showNotification('👆 Tap ☰ untuk buka/tutup menu', 'info');
+                        }, 2000);
+                    }
+                }, 1000);
+            } else {
+                // Auto-expand sidebar on desktop
+                document.getElementById('sidebarContent').classList.add('expanded');
+                sidebarExpanded = true;
+            }
+
+            // Optimize for mobile devices
+            optimizeForMobile();
+
+            // Welcome message
+            setTimeout(() => {
+                if (!authToken) {
+                    showNotification('🏙️ Selamat datang di CCTV Monitoring Banda Aceh! Login untuk akses penuh.', 'info');
+                } else {
+                    showNotification(`🏙️ Selamat datang kembali${currentUser ? ', ' + currentUser.name : ''}!`, 'info');
+                }
+            }, 3000);
+        });
+
+        // Handle visibility change to pause background tasks
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // App is in background, pause video if playing
+                const video = document.getElementById('videoPlayer');
+                if (video && !video.paused) {
+                    video.pause();
+                }
+            }
+        });
+
+        // Add service worker for PWA capabilities (mobile optimization)
+        if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed'));
+        }
+
+        // Performance logging
+        function logPerformance() {
+            const stats = {
+                totalCCTV: cctvData.length,
+                onlineCCTV: cctvData.filter(c => c.status === 'online').length,
+                offlineCCTV: cctvData.filter(c => c.status === 'offline').length,
+                mapMarkers: markers.length,
+                isMobile: window.innerWidth < 768,
+                isAuthenticated: !!authToken,
+                userRole: currentUser?.role || 'guest'
+            };
+
+            console.log('📊 CCTV System Stats:', stats);
+            
+            // Performance monitoring for mobile
+            if (performance.mark) {
+                performance.mark('app-loaded');
+                performance.measure('app-load-time', 'navigationStart', 'app-loaded');
+                
+                const measures = performance.getEntriesByType('measure');
+                measures.forEach(measure => {
+                    console.log(`⏱️ ${measure.name}: ${measure.duration.toFixed(2)}ms`);
+                });
+            }
+        }
+
+        setTimeout(logPerformance, 5000);
+
+        // Cleanup function for better memory management
+        window.addEventListener('beforeunload', function() {
+            // Cleanup video resources
+            const video = document.getElementById('videoPlayer');
+            if (video && video.hlsInstance) {
+                video.hlsInstance.destroy();
+            }
+            
+            // Clear timers
+            clearTimeout(searchTimeout);
+        });
     </script>
 </body>
 </html>
