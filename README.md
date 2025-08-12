@@ -26,23 +26,30 @@ Sebelum menjalankan aplikasi ini, pastikan Anda sudah menginstal:
 1. [Node.js](https://nodejs.org/) (termasuk `npm` atau `yarn`)
 2. [MongoDB](https://www.mongodb.com/try/download/community)
 
-## Cara Menjalankan Aplikasi
-
 ### 1. Clone Repository
 Clone repository ini ke mesin lokal Anda menggunakan perintah berikut:
 ```bash
-git clone https://github.com/username/repository-name.git
-cd repository-name```
+=======
+git clone https://github.com/Dimas391/Banda-Aceh-CCTV-Monitoring-System.git
+```
+
+### 2 Masuk ke Dalam Direktori 
+Masuk ke dalam direktori Banda-aceh-CCTV-Monitoring-System
+```bash
+cd Banda-Aceh-CCTV-Monitoring-System
+```
 
 ### 2. Instalasi Dependencies
 Setelah clone repository, instal dependensi yang diperlukan dengan menjalankan
 ```bash
-npm-install``
+npm-install
+```
 
 ### 3. Menjalankan Backend
 Setelah konfigurasi selesai, jalankan server menggunakan perintah:
 ```bash
 npm run dev
+```
 
 ## 4. Menjalankan Frontend
 Akses file public/index.html pada browser Anda. Anda bisa membuka file tersebut langsung di browser atau menggunakan server lokal (misalnya menggunakan live-server atau http-server).
@@ -59,4 +66,3 @@ Terima kasih telah menggunakan **CCTV Monitoring System - Banda Aceh Smart City*
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
