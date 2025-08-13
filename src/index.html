@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +6,10 @@
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
     
     <!-- HLS.js for video streaming -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.4.10/hls.min.js"></script>
@@ -25,103 +28,131 @@
             min-height: 100vh;
         }
 
-        body::before {
-            content: '';
+        .container {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .sidebar {
             position: fixed;
+            left: -100%; /* Memindahkan sidebar ke kiri */
+            top: 0;
+            width: 85%;
+            max-width: 400px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            box-shadow: 5px 0 25px rgba(0, 0, 0, 0.2); /* Ubah posisi shadow */
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.active {
+            left: 0; /* Menampilkan sidebar dari kiri */
+        }
+
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            position: fixed;
+            left: -100%;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.08) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* Mobile-first approach */
-        .container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Collapsible sidebar for mobile */
-        .sidebar {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
             transition: all 0.3s ease;
         }
 
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Mobile header */
         .mobile-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 12px 16px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .mobile-header h1 {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 700;
         }
 
-        .mobile-toggle {
+        .close-sidebar {
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            padding: 8px;
-            border-radius: 8px;
+            padding: 8px 12px;
+            border-radius: 50%;
             cursor: pointer;
             font-size: 1.2rem;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
         }
 
-        .mobile-toggle:hover {
+        .close-sidebar:hover {
             background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
         }
 
-        .sidebar-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .sidebar-content.expanded {
-            max-height: 70vh;
-        }
-
+        /* Desktop header - hidden on mobile */
         .desktop-header {
             display: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
         }
 
-        /* Compact auth section */
+        .desktop-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .desktop-header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Auth section */
         .auth-container {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-            background: rgba(255,255,255,0.3);
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.5);
         }
 
         .auth-buttons {
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
 
         .auth-btn {
             flex: 1;
-            padding: 10px 12px;
+            padding: 12px 16px;
             border: none;
-            border-radius: 20px;
+            border-radius: 25px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             transition: all 0.3s ease;
             backdrop-filter: blur(10px);
             text-align: center;
@@ -143,39 +174,40 @@
         }
 
         .auth-btn:active {
-            transform: scale(0.98);
+            transform: scale(0.95);
         }
 
-        /* Compact search */
+        /* Search section */
         .search-container {
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(0,0,0,0.08);
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
         }
 
         .search-box {
             display: flex;
-            gap: 8px;
+            gap: 10px;
         }
 
         .search-input {
             flex: 1;
-            padding: 10px 14px;
+            padding: 12px 16px;
             border: 2px solid rgba(102, 126, 234, 0.2);
             border-radius: 25px;
             font-size: 14px;
             outline: none;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.9);
             font-weight: 500;
         }
 
         .search-btn, .filter-btn {
-            padding: 10px 12px;
+            padding: 12px 16px;
             border: none;
             border-radius: 25px;
             cursor: pointer;
             font-size: 14px;
             backdrop-filter: blur(10px);
             transition: all 0.2s ease;
+            min-width: 48px;
         }
 
         .search-btn {
@@ -188,24 +220,24 @@
             border: 2px solid rgba(102, 126, 234, 0.2);
         }
 
-        /* Compact CCTV list */
+        /* CCTV list */
         .cctv-list {
-            padding: 8px 16px;
-            max-height: 40vh;
+            flex: 1;
+            padding: 16px 20px;
             overflow-y: auto;
             background: rgba(255,255,255,0.2);
         }
 
         .cctv-item {
             background: rgba(255,255,255,0.95);
-            margin-bottom: 8px;
-            padding: 12px;
-            border-radius: 12px;
+            margin-bottom: 12px;
+            padding: 16px;
+            border-radius: 16px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             position: relative;
             border-left: 4px solid #667eea;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .cctv-item:active {
@@ -216,26 +248,27 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-left-color: white;
+            transform: translateX(-5px);
         }
 
         .cctv-name {
             font-weight: 600;
-            font-size: 0.95rem;
-            margin-bottom: 4px;
+            font-size: 1rem;
+            margin-bottom: 6px;
         }
 
         .cctv-location {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             opacity: 0.8;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .cctv-status {
             display: inline-flex;
             align-items: center;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.7rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
         }
@@ -259,18 +292,19 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        /* Admin controls - stacked for mobile */
+        /* Admin controls */
         .admin-controls {
-            margin-top: 8px;
+            margin-top: 12px;
             display: none;
-            flex-direction: column;
-            gap: 6px;
+            flex-direction: row;
+            gap: 8px;
         }
 
         .admin-controls button {
+            flex: 1;
             padding: 8px 12px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 0.75rem;
             font-weight: 600;
@@ -288,13 +322,14 @@
         }
 
         .admin-controls button:active {
-            transform: scale(0.96);
+            transform: scale(0.95);
         }
 
-        /* Map container - larger on mobile */
+        /* Map container - full screen on mobile */
         .map-container {
             flex: 1;
-            min-height: 60vh;
+            width: 100%;
+            height: 100vh;
             position: relative;
             background: #f8f9fa;
         }
@@ -302,31 +337,67 @@
         #map {
             width: 100%;
             height: 100%;
-            min-height: 60vh;
+        }
+
+        /* Mobile menu button */
+        .mobile-menu-btn {
+            position: fixed;
+            top: 90px;
+            left: 7px;
+            width: 56px;
+            height: 56px;
+            bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:active {
+            transform: scale(0.95);
+        }
+
+        .mobile-menu-btn.active {
+            background: transparent;
+            border: none; 
+            visibility: hidden;
+            transform: rotate(90deg);
         }
 
         .add-cctv-btn {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            padding: 12px 16px;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             border: none;
-            border-radius: 25px;
+            border-radius: 50%;
             cursor: pointer;
             font-weight: 600;
             z-index: 1000;
             display: none;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+            font-size: 1.5rem;
+            box-shadow: 0 4px 16px rgba(40, 167, 69, 0.4);
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
         }
 
         .add-cctv-btn:active {
             transform: scale(0.95);
         }
 
-        /* Modal improvements for mobile */
+        /* Modals */
         .modal {
             display: none;
             position: fixed;
@@ -336,80 +407,71 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            padding: 16px;
+            padding: 20px;
         }
 
         .modal-content {
-            background: rgba(255,255,255,0.95);
+            background: rgba(255,255,255,0.98);
             margin: 20px auto;
-            padding: 24px;
-            border-radius: 16px;
+            padding: 30px;
+            border-radius: 20px;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             backdrop-filter: blur(20px);
             max-height: 90vh;
             overflow-y: auto;
-        }
-
-        .modal-center {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 16px;
-        }
-
-        .modal-center .modal-content {
-            margin: 0;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
         .modal h2 {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
+            font-size: 1.4rem;
+            margin-bottom: 24px;
             color: #333;
             text-align: center;
             font-weight: 600;
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             font-weight: 600;
             color: #555;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
         }
 
         .form-group input, .form-group select {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 18px;
             border: 2px solid rgba(102, 126, 234, 0.2);
-            border-radius: 12px;
-            font-size: 16px; /* Prevents zoom on iOS */
+            border-radius: 15px;
+            font-size: 16px;
             outline: none;
             transition: all 0.3s ease;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.9);
         }
 
         .form-group input:focus, .form-group select:focus {
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
 
         .form-buttons {
             display: flex;
             flex-direction: column;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 24px;
         }
 
         .form-buttons button {
-            padding: 14px 20px;
+            padding: 16px 24px;
             border: none;
-            border-radius: 12px;
+            border-radius: 15px;
             cursor: pointer;
             font-weight: 600;
             font-size: 1rem;
@@ -432,7 +494,7 @@
             transform: scale(0.98);
         }
 
-        /* Video modal for mobile */
+        /* Video modal */
         .video-modal {
             display: none;
             position: fixed;
@@ -451,15 +513,15 @@
             transform: translate(-50%, -50%);
             width: 95%;
             max-width: 600px;
-            background: rgba(255,255,255,0.95);
-            border-radius: 16px;
+            background: rgba(255,255,255,0.98);
+            border-radius: 20px;
             overflow: hidden;
         }
 
         .video-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 16px;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -467,18 +529,23 @@
 
         .video-header h3 {
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
 
         .close-video {
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
-            font-size: 24px;
+            font-size: 1.5rem;
             cursor: pointer;
             padding: 8px 12px;
             border-radius: 50%;
             transition: all 0.2s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .close-video:active {
@@ -491,18 +558,19 @@
             background: #000;
         }
 
-        /* Notifications for mobile */
+        /* Notifications */
         .notification {
             position: fixed;
-            top: 16px;
-            left: 16px;
-            right: 16px;
-            padding: 16px;
-            border-radius: 12px;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            border-radius: 15px;
             z-index: 3000;
             font-weight: 600;
             backdrop-filter: blur(20px);
             animation: slideDown 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .notification.success {
@@ -532,9 +600,9 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255,255,255,0.95);
-            padding: 24px;
-            border-radius: 16px;
+            background: rgba(255,255,255,0.98);
+            padding: 30px;
+            border-radius: 20px;
             z-index: 3000;
             backdrop-filter: blur(20px);
             text-align: center;
@@ -555,7 +623,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Popup improvements */
+        /* Custom popup */
         .custom-popup {
             text-align: center;
             padding: 12px;
@@ -605,7 +673,38 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Scrollbar for mobile */
+        /* Custom marker cluster styles */
+        .marker-cluster-small {
+            background-color: rgba(102, 126, 234, 0.8);
+            border: 3px solid rgba(102, 126, 234, 0.6);
+        }
+        .marker-cluster-small div {
+            background-color: rgba(102, 126, 234, 0.9);
+            color: white;
+            font-weight: bold;
+        }
+
+        .marker-cluster-medium {
+            background-color: rgba(118, 75, 162, 0.8);
+            border: 3px solid rgba(118, 75, 162, 0.6);
+        }
+        .marker-cluster-medium div {
+            background-color: rgba(118, 75, 162, 0.9);
+            color: white;
+            font-weight: bold;
+        }
+
+        .marker-cluster-large {
+            background-color: rgba(253, 126, 20, 0.8);
+            border: 3px solid rgba(253, 126, 20, 0.6);
+        }
+        .marker-cluster-large div {
+            background-color: rgba(253, 126, 20, 0.9);
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Scrollbar */
         .cctv-list::-webkit-scrollbar {
             width: 4px;
         }
@@ -619,11 +718,6 @@
             border-radius: 2px;
         }
 
-        /* Touch feedback */
-        .touchable:active {
-            background-color: rgba(0,0,0,0.05);
-        }
-
         /* Tablet styles (768px and up) */
         @media (min-width: 768px) {
             .container {
@@ -631,9 +725,19 @@
             }
 
             .sidebar {
+                position: relative;
+                left: 0;
                 width: 380px;
                 height: 100vh;
                 border-radius: 0;
+            }
+
+            .sidebar-overlay {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: none;
             }
 
             .mobile-header {
@@ -642,64 +746,25 @@
 
             .desktop-header {
                 display: block;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 24px;
-                text-align: center;
             }
 
-            .desktop-header h1 {
-                font-size: 1.6rem;
-                font-weight: 700;
-                margin-bottom: 6px;
-            }
-
-            .desktop-header .subtitle {
-                font-size: 0.9rem;
-                opacity: 0.9;
-            }
-
-            .sidebar-content {
-                max-height: none;
-                overflow: visible;
-                display: flex;
-                flex-direction: column;
-                height: calc(100vh - 120px);
-            }
-
-            .sidebar-content.expanded {
-                max-height: none;
-            }
-
-            .cctv-list {
-                flex: 1;
-                max-height: none;
-                padding: 16px;
-            }
-
-            .search-container {
-                padding: 20px;
-            }
-
-            .auth-container {
-                padding: 20px;
+            .close-sidebar {
+                display: none;
             }
 
             .map-container {
                 flex: 1;
                 height: 100vh;
-                min-height: auto;
                 border-radius: 0;
             }
 
             #map {
                 height: 100vh;
-                min-height: auto;
             }
 
             .modal-content {
                 max-width: 500px;
-                padding: 32px;
+                padding: 40px;
             }
 
             .form-buttons {
@@ -718,24 +783,19 @@
             .cancel-btn {
                 order: 1;
             }
-        }
 
-        /* Desktop styles (1024px and up) */
-        @media (min-width: 1024px) {
-            .sidebar {
-                width: 420px;
+            .add-cctv-btn {
+                width: auto;
+                height: auto;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: 0.9rem;
+                bottom: 30px;
+                right: 30px;
             }
 
-            .map-container {
-                border-radius: 0 20px 20px 0;
-            }
-
-            .cctv-item {
-                padding: 16px;
-            }
-
-            .admin-controls {
-                flex-direction: row;
+            .add-cctv-btn::before {
+                content: '+ Tambah CCTV';
             }
         }
 
@@ -753,42 +813,11 @@
                 font-size: 1rem;
             }
         }
-
-        /* Landscape orientation fixes */
-        @media (max-width: 767px) and (orientation: landscape) {
-            .sidebar-content.expanded {
-                max-height: 50vh;
-            }
-
-            .map-container {
-                min-height: 50vh;
-            }
-
-            #map {
-                min-height: 50vh;
-            }
-
-            .cctv-list {
-                max-height: 25vh;
-            }
-        }
-
-        /* High DPI screens */
-        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-            .cctv-item {
-                border-left-width: 3px;
-            }
-
-            .stream-indicator {
-                width: 8px;
-                height: 8px;
-            }
-        }
-
+        
         /* Dark mode support */
         @media (prefers-color-scheme: dark) {
             .modal-content {
-                background: rgba(33, 37, 41, 0.95);
+                background: rgba(33, 37, 41, 0.98);
                 color: white;
             }
 
@@ -797,7 +826,7 @@
             }
 
             .form-group input, .form-group select {
-                background: rgba(52, 58, 64, 0.8);
+                background: rgba(52, 58, 64, 0.9);
                 color: white;
                 border-color: rgba(102, 126, 234, 0.4);
             }
@@ -819,36 +848,18 @@
                 animation: none;
             }
         }
-
-        /* Print styles */
-        @media print {
-            .mobile-header, .auth-container, .search-container, 
-            .add-cctv-btn, .admin-controls, .modal, .video-modal,
-            .loading, .notification {
-                display: none !important;
-            }
-
-            body {
-                background: white;
-            }
-
-            .container {
-                flex-direction: column;
-            }
-
-            .sidebar, .map-container {
-                width: 100%;
-            }
-        }
     </style>
 </head>
 <body>
+    <!-- Sidebar overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
     <div class="container">
-        <div class="sidebar">
-            <!-- Mobile Header with Toggle -->
+         <div class="sidebar" id="sidebar">
+            <!-- Mobile Header -->
             <div class="mobile-header">
                 <h1>CCTV Banda Aceh</h1>
-                <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+                <button class="close-sidebar" onclick="closeSidebar()">✕</button>
             </div>
 
             <!-- Desktop Header -->
@@ -857,148 +868,147 @@
                 <div class="subtitle">Banda Aceh Smart City</div>
             </div>
 
-            <div class="sidebar-content" id="sidebarContent">
-                <!-- Auth Section -->
-                <div class="auth-container">
-                    <div class="auth-buttons" id="authButtons">
-                        <button class="auth-btn login-btn touchable" onclick="showLoginModal()">Login</button>
-                        <button class="auth-btn admin-btn touchable" onclick="showRegisterModal()">Daftar</button>
-                    </div>
-                    <div id="loggedInUser" style="display: none;">
-                        <div style="margin-bottom: 10px; font-size: 0.9rem;">
-                            <strong>Hai, <span id="userName"></span>!</strong>
-                            <span id="userRole" style="background: #667eea; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; margin-left: 5px;"></span>
-                        </div>
-                        <button class="auth-btn logout-btn touchable" onclick="logout()">Logout</button>
-                    </div>
+            <!-- Auth Section -->
+            <div class="auth-container">
+                <div class="auth-buttons" id="authButtons">
+                    <button class="auth-btn login-btn" onclick="showLoginModal()">Login</button>
+                    <button class="auth-btn admin-btn" onclick="showRegisterModal()">Daftar</button>
                 </div>
-
-                <!-- Search Section -->
-                <div class="search-container">
-                    <div class="search-box">
-                        <input type="text" class="search-input" placeholder="Cari CCTV..." id="searchInput">
-                        <button class="search-btn touchable" onclick="searchCCTV()">🔍</button>
-                        <button class="filter-btn touchable" onclick="toggleFilter()">⚙️</button>
+                <div id="loggedInUser" style="display: none;">
+                    <div style="margin-bottom: 12px; font-size: 0.95rem;">
+                        <strong>Hai, <span id="userName"></span>!</strong>
+                        <span id="userRole" style="background: #667eea; color: white; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; margin-left: 8px;"></span>
                     </div>
-                </div>
-
-                <!-- CCTV List -->
-                <div class="cctv-list" id="cctvList">
-                    <!-- CCTV items will be populated here -->
+                    <button class="auth-btn logout-btn" onclick="logout()">Logout</button>
                 </div>
             </div>
-        </div>
 
-        <!-- Map Container -->
+            <!-- Search Section -->
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" class="search-input" placeholder="Cari CCTV..." id="searchInput">
+                    <button class="search-btn" onclick="searchCCTV()">🔍</button>
+                    <button class="filter-btn" onclick="toggleFilter()">⚙️</button>
+                </div>
+            </div>
+
+            <!-- CCTV List -->
+            <div class="cctv-list" id="cctvList">
+                <!-- CCTV items will be populated here -->
+            </div>
+        </div>
+        <!-- Map Container - Full screen on mobile -->
         <div class="map-container">
             <div id="map"></div>
-            <button class="add-cctv-btn touchable" id="addCctvBtn" onclick="showAddCctvModal()">+ Tambah</button>
+            
+            <!-- Mobile menu button -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleSidebar()">☰</button>
+            
+            <!-- Add CCTV button -->
+            <button class="add-cctv-btn" id="addCctvBtn" onclick="showAddCctvModal()">+</button>
         </div>
+
+        <!-- Sidebar -->
+       
     </div>
 
     <!-- Login Modal -->
     <div class="modal" id="loginModal">
-        <div class="modal-center">
-            <div class="modal-content">
-                <h2>Login ke Sistem</h2>
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="loginEmail">Email:</label>
-                        <input type="email" id="loginEmail" required value="admin@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Password:</label>
-                        <input type="password" id="loginPassword" required value="123456">
-                    </div>
-                    <div class="form-buttons">
-                        <button type="button" class="cancel-btn touchable" onclick="closeLoginModal()">Batal</button>
-                        <button type="submit" class="save-btn touchable">Login</button>
-                    </div>
-                    <div style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
-                        Belum punya akun? <a href="javascript:void(0)" onclick="switchToRegister()" style="color: #667eea; text-decoration: none; font-weight: 600;">Daftar disini</a>
-                    </div>
-                </form>
-            </div>
+        <div class="modal-content">
+            <h2>Login ke Sistem</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email:</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password:</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeLoginModal()">Batal</button>
+                    <button type="submit" class="save-btn">Login</button>
+                </div>
+                <div style="text-align: center; margin-top: 16px; font-size: 0.9rem;">
+                    Belum punya akun? <a href="javascript:void(0)" onclick="switchToRegister()" style="color: #667eea; text-decoration: none; font-weight: 600;">Daftar disini</a>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Register Modal -->
     <div class="modal" id="registerModal">
-        <div class="modal-center">
-            <div class="modal-content">
-                <h2>Daftar Akun Baru</h2>
-                <form id="registerForm">
-                    <div class="form-group">
-                        <label for="registerName">Nama Lengkap:</label>
-                        <input type="text" id="registerName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="registerEmail">Email:</label>
-                        <input type="email" id="registerEmail" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="registerPassword">Password:</label>
-                        <input type="password" id="registerPassword" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="registerConfirmPassword">Konfirmasi Password:</label>
-                        <input type="password" id="registerConfirmPassword" required>
-                    </div>
-                    <div class="form-buttons">
-                        <button type="button" class="cancel-btn touchable" onclick="closeRegisterModal()">Batal</button>
-                        <button type="submit" class="save-btn touchable">Daftar</button>
-                    </div>
-                    <div style="text-align: center; margin-top: 15px; font-size: 0.9rem;">
-                        Sudah punya akun? <a href="javascript:void(0)" onclick="switchToLogin()" style="color: #667eea; text-decoration: none; font-weight: 600;">Login disini</a>
-                    </div>
-                </form>
-            </div>
+        <div class="modal-content">
+            <h2>Daftar Akun Baru</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="registerName">Nama Lengkap:</label>
+                    <input type="text" id="registerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email:</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password:</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerConfirmPassword">Konfirmasi Password:</label>
+                    <input type="password" id="registerConfirmPassword" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeRegisterModal()">Batal</button>
+                    <button type="submit" class="save-btn">Daftar</button>
+                </div>
+                <div style="text-align: center; margin-top: 16px; font-size: 0.9rem;">
+                    Sudah punya akun? <a href="javascript:void(0)" onclick="switchToLogin()" style="color: #667eea; text-decoration: none; font-weight: 600;">Login disini</a>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Add/Edit CCTV Modal -->
     <div class="modal" id="cctvModal">
-        <div class="modal-center">
-            <div class="modal-content">
-                <h2 id="modalTitle">Tambah CCTV Baru</h2>
-                <form id="cctvForm">
-                    <div class="form-group">
-                        <label for="cctvName">Nama CCTV:</label>
-                        <input type="text" id="cctvName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="cctvLocation">Lokasi:</label>
-                        <input type="text" id="cctvLocation" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="cctvLat">Latitude:</label>
-                        <input type="number" id="cctvLat" step="any" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="cctvLng">Longitude:</label>
-                        <input type="number" id="cctvLng" step="any" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="cctvStream">Stream URL:</label>
-                        <input type="url" id="cctvStream" placeholder="https://example.com/stream.m3u8">
-                    </div>
-                    <div class="form-group">
-                        <label for="cctvDescription">Deskripsi:</label>
-                        <input type="text" id="cctvDescription" placeholder="Deskripsi CCTV">
-                    </div>
-                    <div class="form-group">
-                        <label for="cctvStatus">Status:</label>
-                        <select id="cctvStatus">
-                            <option value="online">Online</option>
-                            <option value="offline">Offline</option>
-                        </select>
-                    </div>
-                    <div class="form-buttons">
-                        <button type="button" class="cancel-btn touchable" onclick="closeCctvModal()">Batal</button>
-                        <button type="submit" class="save-btn touchable">Simpan</button>
-                    </div>
-                </form>
-            </div>
+        <div class="modal-content">
+            <h2 id="modalTitle">Tambah CCTV Baru</h2>
+            <form id="cctvForm">
+                <div class="form-group">
+                    <label for="cctvName">Nama CCTV:</label>
+                    <input type="text" id="cctvName" required>
+                </div>
+                <div class="form-group">
+                    <label for="cctvLocation">Lokasi:</label>
+                    <input type="text" id="cctvLocation" required>
+                </div>
+                <div class="form-group">
+                    <label for="cctvLat">Latitude:</label>
+                    <input type="number" id="cctvLat" step="any" required>
+                </div>
+                <div class="form-group">
+                    <label for="cctvLng">Longitude:</label>
+                    <input type="number" id="cctvLng" step="any" required>
+                </div>
+                <div class="form-group">
+                    <label for="cctvStream">Stream URL:</label>
+                    <input type="url" id="cctvStream" placeholder="https://example.com/stream.m3u8">
+                </div>
+                <div class="form-group">
+                    <label for="cctvDescription">Deskripsi:</label>
+                    <input type="text" id="cctvDescription" placeholder="Deskripsi CCTV">
+                </div>
+                <div class="form-group">
+                    <label for="cctvStatus">Status:</label>
+                    <select id="cctvStatus">
+                        <option value="online">Online</option>
+                        <option value="offline">Offline</option>
+                    </select>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="cancel-btn" onclick="closeCctvModal()">Batal</button>
+                    <button type="submit" class="save-btn">Simpan</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1007,7 +1017,7 @@
         <div class="video-content">
             <div class="video-header">
                 <h3 id="videoTitle">Live Stream CCTV</h3>
-                <button class="close-video touchable" onclick="closeVideoModal()">&times;</button>
+                <button class="close-video" onclick="closeVideoModal()">&times;</button>
             </div>
             <video id="videoPlayer" controls autoplay muted playsinline></video>
         </div>
@@ -1021,46 +1031,51 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
     
     <script>
         let map;
         let cctvData = [];
         let markers = [];
+        let markerClusterGroup;
         let currentUser = null;
         let editingCctvId = null;
         let authToken = localStorage.getItem('authToken');
-        let sidebarExpanded = false;
+        let sidebarOpen = false;
 
         // API Configuration
         const API_BASE = 'https://banda-aceh-cctv-monitoring-system.vercel.app/api';
 
-        // Mobile-specific functions
+        // Mobile sidebar functions
         function toggleSidebar() {
-            const sidebarContent = document.getElementById('sidebarContent');
-            const toggleBtn = document.querySelector('.mobile-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const menuBtn = document.getElementById('mobileMenuBtn');
             
-            sidebarExpanded = !sidebarExpanded;
+            sidebarOpen = !sidebarOpen;
             
-            if (sidebarExpanded) {
-                sidebarContent.classList.add('expanded');
-                toggleBtn.innerHTML = '✕';
-                // Auto-collapse after 30 seconds of inactivity
-                setTimeout(() => {
-                    if (sidebarExpanded) {
-                        toggleSidebar();
-                    }
-                }, 30000);
+            if (sidebarOpen) {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+                menuBtn.classList.add('active');
+                menuBtn.innerHTML = '✕';
+                document.body.style.overflow = 'hidden';
             } else {
-                sidebarContent.classList.remove('expanded');
-                toggleBtn.innerHTML = '☰';
+                closeSidebar();
             }
         }
 
-        // Auto-collapse sidebar when clicking on map (mobile only)
-        function handleMapClick() {
-            if (window.innerWidth < 768 && sidebarExpanded) {
-                toggleSidebar();
-            }
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            menuBtn.classList.remove('active');
+            menuBtn.innerHTML = '☰';
+            document.body.style.overflow = '';
+            sidebarOpen = false;
         }
 
         // Initialize the application
@@ -1070,6 +1085,13 @@
             loadCCTVData();
             setupEventListeners();
             setupMobileOptimizations();
+            
+            // Show welcome message
+            setTimeout(() => {
+                if (!authToken) {
+                    showNotification('🏙️ Selamat datang di CCTV Monitoring Banda Aceh! Tap menu untuk login.', 'info');
+                }
+            }, 2000);
         });
 
         // Mobile optimizations
@@ -1083,6 +1105,10 @@
                     if (map) {
                         map.invalidateSize();
                     }
+                    // Close sidebar on orientation change
+                    if (window.innerWidth < 768 && sidebarOpen) {
+                        closeSidebar();
+                    }
                 }, 100);
             });
 
@@ -1094,29 +1120,40 @@
                     if (map) {
                         map.invalidateSize();
                     }
-                    // Auto-collapse sidebar on desktop resize
-                    if (window.innerWidth >= 768 && sidebarExpanded) {
-                        sidebarExpanded = true; // Force expansion on desktop
-                        document.getElementById('sidebarContent').classList.add('expanded');
+                    // Auto-close sidebar on desktop resize
+                    if (window.innerWidth >= 768) {
+                        closeSidebar();
                     }
                 }, 250);
             });
 
-            // Add touch feedback to clickable elements
+            // Add swipe to close sidebar
+            let startX = 0;
+            let currentX = 0;
+            let isSwping = false;
+
             document.addEventListener('touchstart', function(e) {
-                if (e.target.classList.contains('touchable') || 
-                    e.target.classList.contains('cctv-item')) {
-                    e.target.style.transform = 'scale(0.98)';
+                if (sidebarOpen) {
+                    startX = e.touches[0].clientX;
+                    isSwping = true;
                 }
             });
 
-            document.addEventListener('touchend', function(e) {
-                if (e.target.classList.contains('touchable') || 
-                    e.target.classList.contains('cctv-item')) {
-                    setTimeout(() => {
-                        e.target.style.transform = '';
-                    }, 150);
+            document.addEventListener('touchmove', function(e) {
+                if (isSwping && sidebarOpen) {
+                    currentX = e.touches[0].clientX;
+                    const diffX = currentX - startX;
+                    
+                    // Swipe right to close
+                    if (diffX > 50) {
+                        closeSidebar();
+                        isSwping = false;
+                    }
                 }
+            });
+
+            document.addEventListener('touchend', function() {
+                isSwping = false;
             });
         }
 
@@ -1171,11 +1208,11 @@
                 await loadCCTVData();
                 showNotification('Login berhasil! 🎉', 'success');
                 
-                // Auto-collapse sidebar on mobile after login
+                // Auto-close sidebar on mobile after login
                 if (window.innerWidth < 768) {
                     setTimeout(() => {
-                        if (sidebarExpanded) toggleSidebar();
-                    }, 2000);
+                        closeSidebar();
+                    }, 1500);
                 }
             } catch (error) {
                 showNotification('Login gagal: ' + error.message, 'error');
@@ -1215,6 +1252,13 @@
             updateAuthUI();
             loadCCTVData();
             showNotification('Logout berhasil 👋', 'info');
+            
+            // Close sidebar on mobile after logout
+            if (window.innerWidth < 768) {
+                setTimeout(() => {
+                    closeSidebar();
+                }, 1000);
+            }
         }
 
         function checkAuthStatus() {
@@ -1230,7 +1274,7 @@
                             };
                             updateAuthUI();
                             if (currentUser.role === 'admin') {
-                                document.getElementById('addCctvBtn').style.display = 'block';
+                                document.getElementById('addCctvBtn').style.display = 'flex';
                             }
                         } catch (e) {
                             logout();
@@ -1299,30 +1343,105 @@
                 attributionControl: false
             });
 
-            // Add tile layer
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            // Define base layers
+            const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            });
+
+            const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles © Esri',
+                maxZoom: 19
+            });
+
+            const hybridLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                attribution: '© Google',
+                maxZoom: 20
+            });
+
+            // Add Google Street View layer
+            const googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '© Google'
+            });
+
+            // Set default layer
+            osmLayer.addTo(map);
+
+            // Create base layers object
+            const baseLayers = {
+                "🗺️ Peta Jalan": osmLayer,
+                "🛰️ Satelit": satelliteLayer,
+                "🏷️ Hybrid": hybridLayer,
+                "🛣️ Google Streets": googleStreets
+            };
+
+            // Add layer control
+            const layerControl = L.control.layers(baseLayers, null, {
+                position: 'topright',
+                collapsed: true
+            });
+            layerControl.addTo(map);
+
+            // Initialize marker cluster group with custom styling
+            markerClusterGroup = L.markerClusterGroup({
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                spiderfyOnMaxZoom: true,
+                removeOutsideVisibleBounds: true,
+                disableClusteringAtZoom: 15,
+                maxClusterRadius: 80,
+                iconCreateFunction: function(cluster) {
+                    const childCount = cluster.getChildCount();
+                    let className = 'marker-cluster-';
+                    
+                    if (childCount < 10) {
+                        className += 'small';
+                    } else if (childCount < 100) {
+                        className += 'medium';
+                    } else {
+                        className += 'large';
+                    }
+
+                    return new L.DivIcon({ 
+                        html: '<div><span>' + childCount + '</span></div>', 
+                        className: 'marker-cluster ' + className, 
+                        iconSize: new L.Point(40, 40) 
+                    });
+                }
+            });
+
+            map.addLayer(markerClusterGroup);
 
             // Handle map clicks
             map.on('click', function(e) {
-                handleMapClick();
+                // Close sidebar on map click (mobile)
+                if (window.innerWidth < 768 && sidebarOpen) {
+                    closeSidebar();
+                }
+                
                 if (currentUser && currentUser.role === 'admin') {
                     document.getElementById('cctvLat').value = e.latlng.lat.toFixed(6);
                     document.getElementById('cctvLng').value = e.latlng.lng.toFixed(6);
                 }
             });
 
-            // Add location control for mobile
+            // Add location control
             if ('geolocation' in navigator) {
-                const locationBtn = L.control({position: 'bottomright'});
+                const locationBtn = L.control({position: 'bottomleft'});
                 locationBtn.onAdd = function(map) {
                     const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                    div.innerHTML = '<button style="background: white; border: none; padding: 8px; cursor: pointer; font-size: 16px;" onclick="getCurrentLocation()" title="Lokasi Saya">📍</button>';
+                    div.innerHTML = '<button style="background: white; border: none; padding: 10px; cursor: pointer; font-size: 18px; border-radius: 4px;" onclick="getCurrentLocation()" title="Lokasi Saya">📍</button>';
                     return div;
                 };
                 locationBtn.addTo(map);
             }
+
+            // Add cluster events
+            markerClusterGroup.on('clusterclick', function (a) {
+                showNotification(`Cluster berisi ${a.layer.getChildCount()} CCTV 📍`, 'info');
+            });
         }
 
         // Get current location
@@ -1356,9 +1475,10 @@
             }
         }
 
-        // Add markers to map
+        // Add markers to map with clustering
         function addMarkersToMap() {
-            markers.forEach(marker => map.removeLayer(marker));
+            // Clear existing markers from cluster group
+            markerClusterGroup.clearLayers();
             markers = [];
 
             cctvData.forEach(cctv => {
@@ -1366,12 +1486,12 @@
                 
                 const customIcon = L.divIcon({
                     className: 'custom-marker',
-                    html: `<div style="background: ${iconColor}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
-                    iconSize: [16, 16],
-                    iconAnchor: [8, 8]
+                    html: `<div style="background: ${iconColor}; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [18, 18],
+                    iconAnchor: [9, 9]
                 });
 
-                const marker = L.marker([cctv.lat, cctv.lng], { icon: customIcon }).addTo(map);
+                const marker = L.marker([cctv.lat, cctv.lng], { icon: customIcon });
 
                 const popupContent = `
                     <div class="custom-popup">
@@ -1379,7 +1499,7 @@
                         <p><strong>📍</strong> ${cctv.location}</p>
                         <p><strong>Status:</strong> <span style="color: ${iconColor}; font-weight: bold;">${cctv.status === 'online' ? '🟢 Online' : '🔴 Offline'}</span></p>
                         ${cctv.status === 'online' && cctv.streamUrl ? 
-                            `<button class="watch-btn touchable" onclick="playVideo('${cctv.id}')">📹 Tonton Live</button>` : 
+                            `<button class="watch-btn" onclick="playVideo('${cctv.id}')">📹 Tonton Live</button>` : 
                             '<p style="color: #dc3545; font-size: 0.8rem;">Stream tidak tersedia</p>'
                         }
                     </div>
@@ -1388,19 +1508,27 @@
                 marker.bindPopup(popupContent);
                 marker.on('click', () => selectCctv(cctv.id));
                 
+                // Add marker to cluster group instead of directly to map
+                markerClusterGroup.addLayer(marker);
                 markers.push(marker);
             });
-        }
 
-        // Render CCTV list
+            // Update cluster display info
+            const totalMarkers = markers.length;
+            if (totalMarkers > 10) {
+                showNotification(`📊 ${totalMarkers} CCTV dimuat dengan clustering aktif`, 'info');
+            }
+        }
+                // Render CCTV list
         function renderCctvList() {
             const listContainer = document.getElementById('cctvList');
             
             if (!authToken) {
                 listContainer.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: #666; font-size: 0.9rem;">
-                        <div style="font-size: 2rem; margin-bottom: 8px;">🔒</div>
-                        <div>Silakan login untuk melihat daftar CCTV</div>
+                    <div style="text-align: center; padding: 30px; color: #666; font-size: 0.95rem;">
+                        <div style="font-size: 3rem; margin-bottom: 12px;">🔒</div>
+                        <div><strong>Silakan login untuk melihat daftar CCTV</strong></div>
+                        <p style="margin-top: 8px; font-size: 0.85rem; opacity: 0.8;">Akses ke sistem monitoring memerlukan autentikasi</p>
                     </div>
                 `;
                 return;
@@ -1418,16 +1546,17 @@
 
             if (filteredData.length === 0) {
                 listContainer.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: #666; font-size: 0.9rem;">
-                        <div style="font-size: 2rem; margin-bottom: 8px;">🔍</div>
-                        <div>Tidak ada CCTV yang ditemukan</div>
+                    <div style="text-align: center; padding: 30px; color: #666; font-size: 0.95rem;">
+                        <div style="font-size: 3rem; margin-bottom: 12px;">🔍</div>
+                        <div><strong>Tidak ada CCTV yang ditemukan</strong></div>
+                        <p style="margin-top: 8px; font-size: 0.85rem; opacity: 0.8;">Coba gunakan kata kunci yang berbeda</p>
                     </div>
                 `;
                 return;
             }
 
             listContainer.innerHTML = filteredData.map(cctv => `
-                <div class="cctv-item touchable" onclick="selectCctv('${cctv.id}')" id="cctv-item-${cctv.id}">
+                <div class="cctv-item" onclick="selectCctv('${cctv.id}')" id="cctv-item-${cctv.id}">
                     <div class="cctv-name">${cctv.name}</div>
                     <div class="cctv-location">📍 ${cctv.location}</div>
                     <span class="cctv-status status-${cctv.status}">
@@ -1435,18 +1564,18 @@
                         ${cctv.status === 'online' && cctv.streamUrl ? '<span class="stream-indicator stream-live"></span>' : ''}
                     </span>
                     ${currentUser && currentUser.role === 'admin' ? `
-                        <div class="admin-controls" style="display: block;">
-                            <button class="edit-btn touchable" onclick="event.stopPropagation(); editCctv('${cctv.id}')">✏️ Edit</button>
-                            <button class="delete-btn touchable" onclick="event.stopPropagation(); deleteCctv('${cctv.id}')">🗑️ Hapus</button>
+                        <div class="admin-controls" style="display: flex;">
+                            <button class="edit-btn" onclick="event.stopPropagation(); editCctv('${cctv.id}')">✏️ Edit</button>
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteCctv('${cctv.id}')">🗑️ Hapus</button>
                         </div>
                     ` : ''}
                 </div>
             `).join('');
 
             // Show count info
-            if (searchQuery) {
+            if (searchQuery || filteredData.length !== cctvData.length) {
                 const countInfo = document.createElement('div');
-                countInfo.style.cssText = 'padding: 8px 12px; font-size: 0.8rem; color: #666; text-align: center; background: rgba(255,255,255,0.5); border-radius: 8px; margin-bottom: 8px;';
+                countInfo.style.cssText = 'padding: 12px 16px; font-size: 0.85rem; color: #667eea; text-align: center; background: rgba(102, 126, 234, 0.1); border-radius: 12px; margin-bottom: 12px; font-weight: 600;';
                 countInfo.textContent = `📊 Menampilkan ${filteredData.length} dari ${cctvData.length} CCTV`;
                 listContainer.insertBefore(countInfo, listContainer.firstChild);
             }
@@ -1467,17 +1596,18 @@
             if (cctv) {
                 map.setView([cctv.lat, cctv.lng], 16);
                 
-                const marker = markers.find(m => 
-                    Math.abs(m.getLatLng().lat - cctv.lat) < 0.0001 && 
-                    Math.abs(m.getLatLng().lng - cctv.lng) < 0.0001
-                );
-                if (marker) {
-                    marker.openPopup();
-                }
+                // Find and open the marker's popup
+                markers.forEach(marker => {
+                    const markerPos = marker.getLatLng();
+                    if (Math.abs(markerPos.lat - cctv.lat) < 0.0001 && 
+                        Math.abs(markerPos.lng - cctv.lng) < 0.0001) {
+                        marker.openPopup();
+                    }
+                });
 
-                // Auto-collapse sidebar on mobile after selection
-                if (window.innerWidth < 768 && sidebarExpanded) {
-                    setTimeout(() => toggleSidebar(), 1000);
+                // Auto-close sidebar on mobile after selection
+                if (window.innerWidth < 768 && sidebarOpen) {
+                    setTimeout(() => closeSidebar(), 1000);
                 }
             }
         }
@@ -1485,7 +1615,6 @@
         // Modal Functions
         function showLoginModal() {
             document.getElementById('loginModal').style.display = 'block';
-            // Focus on first input after modal opens
             setTimeout(() => {
                 document.getElementById('loginEmail').focus();
             }, 300);
@@ -1596,7 +1725,6 @@
         }
 
         async function deleteCctv(id) {
-            // Use custom confirm for mobile
             if (!confirm('Apakah Anda yakin ingin menghapus CCTV ini? 🗑️')) {
                 return;
             }
@@ -1694,38 +1822,35 @@
         }
 
         function toggleFilter() {
-            // Mobile-optimized filter
             const filterModal = document.createElement('div');
             filterModal.className = 'modal';
             filterModal.style.display = 'block';
             
             filterModal.innerHTML = `
-                <div class="modal-center">
-                    <div class="modal-content">
-                        <h2>Filter CCTV 🔍</h2>
-                        <div class="form-group">
-                            <label>Status:</label>
-                            <select id="statusFilter" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid rgba(102, 126, 234, 0.2); font-size: 16px;">
-                                <option value="all">Semua Status</option>
-                                <option value="online">🟢 Online</option>
-                                <option value="offline">🔴 Offline</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Area:</label>
-                            <select id="locationFilter" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid rgba(102, 126, 234, 0.2); font-size: 16px;">
-                                <option value="all">Semua Area</option>
-                                <option value="BAITURRAHMAN">Baiturrahman</option>
-                                <option value="KUTA ALAM">Kuta Alam</option>
-                                <option value="BANDA RAYA">Banda Raya</option>
-                                <option value="JAYA BARU">Jaya Baru</option>
-                                <option value="LUENG BATA">Lueng Bata</option>
-                            </select>
-                        </div>
-                        <div class="form-buttons">
-                            <button class="cancel-btn touchable" onclick="closeFilterModal()">Batal</button>
-                            <button class="save-btn touchable" onclick="applyFilters()">Terapkan Filter</button>
-                        </div>
+                <div class="modal-content">
+                    <h2>Filter CCTV 🔍</h2>
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <select id="statusFilter" style="width: 100%; padding: 14px 18px; border-radius: 15px; border: 2px solid rgba(102, 126, 234, 0.2); font-size: 16px;">
+                            <option value="all">Semua Status</option>
+                            <option value="online">🟢 Online</option>
+                            <option value="offline">🔴 Offline</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Area:</label>
+                        <select id="locationFilter" style="width: 100%; padding: 14px 18px; border-radius: 15px; border: 2px solid rgba(102, 126, 234, 0.2); font-size: 16px;">
+                            <option value="all">Semua Area</option>
+                            <option value="BAITURRAHMAN">Baiturrahman</option>
+                            <option value="KUTA ALAM">Kuta Alam</option>
+                            <option value="BANDA RAYA">Banda Raya</option>
+                            <option value="JAYA BARU">Jaya Baru</option>
+                            <option value="LUENG BATA">Lueng Bata</option>
+                        </select>
+                    </div>
+                    <div class="form-buttons">
+                        <button class="cancel-btn" onclick="closeFilterModal()">Batal</button>
+                        <button class="save-btn" onclick="applyFilters()">Terapkan Filter</button>
                     </div>
                 </div>
             `;
@@ -1765,17 +1890,17 @@
             
             if (data.length === 0) {
                 listContainer.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: #666; font-size: 0.9rem;">
-                        <div style="font-size: 2rem; margin-bottom: 8px;">🚫</div>
-                        <div>Tidak ada CCTV yang cocok dengan filter</div>
-                        <button onclick="clearAllFilters()" style="margin-top: 10px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 20px; cursor: pointer;">Reset Filter</button>
+                    <div style="text-align: center; padding: 30px; color: #666; font-size: 0.95rem;">
+                        <div style="font-size: 3rem; margin-bottom: 12px;">🚫</div>
+                        <div><strong>Tidak ada CCTV yang cocok dengan filter</strong></div>
+                        <button onclick="clearAllFilters()" style="margin-top: 12px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: 600;">Reset Filter</button>
                     </div>
                 `;
                 return;
             }
 
             listContainer.innerHTML = data.map(cctv => `
-                <div class="cctv-item touchable" onclick="selectCctv('${cctv.id}')" id="cctv-item-${cctv.id}">
+                <div class="cctv-item" onclick="selectCctv('${cctv.id}')" id="cctv-item-${cctv.id}">
                     <div class="cctv-name">${cctv.name}</div>
                     <div class="cctv-location">📍 ${cctv.location}</div>
                     <span class="cctv-status status-${cctv.status}">
@@ -1783,9 +1908,9 @@
                         ${cctv.status === 'online' && cctv.streamUrl ? '<span class="stream-indicator stream-live"></span>' : ''}
                     </span>
                     ${currentUser && currentUser.role === 'admin' ? `
-                        <div class="admin-controls" style="display: block;">
-                            <button class="edit-btn touchable" onclick="event.stopPropagation(); editCctv('${cctv.id}')">✏️ Edit</button>
-                            <button class="delete-btn touchable" onclick="event.stopPropagation(); deleteCctv('${cctv.id}')">🗑️ Hapus</button>
+                        <div class="admin-controls" style="display: flex;">
+                            <button class="edit-btn" onclick="event.stopPropagation(); editCctv('${cctv.id}')">✏️ Edit</button>
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteCctv('${cctv.id}')">🗑️ Hapus</button>
                         </div>
                     ` : ''}
                 </div>
@@ -1793,13 +1918,14 @@
 
             // Show filter results count
             const countInfo = document.createElement('div');
-            countInfo.style.cssText = 'padding: 8px 12px; font-size: 0.8rem; color: #667eea; text-align: center; background: rgba(102, 126, 234, 0.1); border-radius: 8px; margin-bottom: 8px; font-weight: 600;';
-            countInfo.innerHTML = `🎯 ${data.length} dari ${cctvData.length} CCTV <button onclick="clearAllFilters()" style="margin-left: 8px; padding: 2px 8px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 0.7rem; cursor: pointer;">Reset</button>`;
+            countInfo.style.cssText = 'padding: 12px 16px; font-size: 0.85rem; color: #667eea; text-align: center; background: rgba(102, 126, 234, 0.1); border-radius: 12px; margin-bottom: 12px; font-weight: 600;';
+            countInfo.innerHTML = `🎯 ${data.length} dari ${cctvData.length} CCTV <button onclick="clearAllFilters()" style="margin-left: 10px; padding: 4px 12px; background: #667eea; color: white; border: none; border-radius: 15px; font-size: 0.75rem; cursor: pointer; font-weight: 600;">Reset</button>`;
             listContainer.insertBefore(countInfo, listContainer.firstChild);
         }
 
         function updateMapMarkers(filteredData) {
-            markers.forEach(marker => map.removeLayer(marker));
+            // Clear existing markers from cluster group
+            markerClusterGroup.clearLayers();
             markers = [];
             
             filteredData.forEach(cctv => {
@@ -1807,12 +1933,12 @@
                 
                 const customIcon = L.divIcon({
                     className: 'custom-marker',
-                    html: `<div style="background: ${iconColor}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
-                    iconSize: [16, 16],
-                    iconAnchor: [8, 8]
+                    html: `<div style="background: ${iconColor}; width: 18px; height: 18px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [18, 18],
+                    iconAnchor: [9, 9]
                 });
 
-                const marker = L.marker([cctv.lat, cctv.lng], { icon: customIcon }).addTo(map);
+                const marker = L.marker([cctv.lat, cctv.lng], { icon: customIcon });
 
                 const popupContent = `
                     <div class="custom-popup">
@@ -1820,7 +1946,7 @@
                         <p><strong>📍</strong> ${cctv.location}</p>
                         <p><strong>Status:</strong> <span style="color: ${iconColor}; font-weight: bold;">${cctv.status === 'online' ? '🟢 Online' : '🔴 Offline'}</span></p>
                         ${cctv.status === 'online' && cctv.streamUrl ? 
-                            `<button class="watch-btn touchable" onclick="playVideo('${cctv.id}')">📹 Tonton Live</button>` : 
+                            `<button class="watch-btn" onclick="playVideo('${cctv.id}')">📹 Tonton Live</button>` : 
                             '<p style="color: #dc3545; font-size: 0.8rem;">Stream tidak tersedia</p>'
                         }
                     </div>
@@ -1829,13 +1955,17 @@
                 marker.bindPopup(popupContent);
                 marker.on('click', () => selectCctv(cctv.id));
                 
+                // Add marker to cluster group
+                markerClusterGroup.addLayer(marker);
                 markers.push(marker);
             });
 
             // Fit map to show all filtered markers
             if (markers.length > 0) {
-                const group = new L.featureGroup(markers);
-                map.fitBounds(group.getBounds().pad(0.1));
+                const bounds = markerClusterGroup.getBounds();
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds.pad(0.1));
+                }
             }
         }
 
@@ -1851,7 +1981,7 @@
             document.getElementById('loadingModal').style.display = show ? 'block' : 'none';
         }
 
-        // Notification system - mobile optimized
+        // Notification system
         function showNotification(message, type = 'info') {
             // Remove existing notifications
             const existing = document.querySelector('.notification');
@@ -1914,7 +2044,7 @@
                 saveCctv();
             });
 
-            // Search input with debounce for better mobile performance
+            // Search input with debounce
             let searchTimeout;
             document.getElementById('searchInput').addEventListener('input', function() {
                 clearTimeout(searchTimeout);
@@ -1945,6 +2075,8 @@
                     closeVideoModal();
                     closeLoginModal();
                     closeRegisterModal();
+                    closeSidebar();
+                    
                     // Close filter modal if exists
                     const filterModal = document.querySelector('.modal[style*="display: block"]');
                     if (filterModal && window.closeFilterModal) {
@@ -1952,6 +2084,18 @@
                     }
                 }
             });
+
+            // Handle back button on mobile
+            if (window.history && window.history.pushState) {
+                window.addEventListener('popstate', function() {
+                    // Close sidebar and modals
+                    closeSidebar();
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.style.display = 'none';
+                    });
+                    closeVideoModal();
+                });
+            }
 
             // Prevent form submission when pressing enter on search
             document.getElementById('searchInput').addEventListener('keydown', function(e) {
@@ -1961,58 +2105,39 @@
                     this.blur(); // Remove focus to hide mobile keyboard
                 }
             });
-
-            // Handle back button on mobile
-            if (window.history && window.history.pushState) {
-                window.addEventListener('popstate', function() {
-                    // Close any open modals
-                    document.querySelectorAll('.modal').forEach(modal => {
-                        modal.style.display = 'none';
-                    });
-                    document.querySelectorAll('.video-modal').forEach(modal => {
-                        modal.style.display = 'none';
-                    });
-                    closeVideoModal();
-                });
-            }
         }
 
-        // Performance optimizations for mobile
+        // Performance optimizations
         function optimizeForMobile() {
-            // Lazy load CCTV items for better performance
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = '1';
-                        entry.target.style.transform = 'translateY(0)';
+            // Handle app visibility change
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    // App is in background, pause video if playing
+                    const video = document.getElementById('videoPlayer');
+                    if (video && !video.paused) {
+                        video.pause();
                     }
-                });
+                    // Close sidebar to save resources
+                    if (sidebarOpen) {
+                        closeSidebar();
+                    }
+                }
             });
 
-            // Observe CCTV items after they're created
-            setTimeout(() => {
-                document.querySelectorAll('.cctv-item').forEach(item => {
-                    item.style.opacity = '0';
-                    item.style.transform = 'translateY(20px)';
-                    item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-                    observer.observe(item);
-                });
-            }, 1000);
-
-            // Add pull-to-refresh functionality
+            // Add pull-to-refresh functionality for CCTV list
             let startY = 0;
             let pullDistance = 0;
-            const threshold = 100;
+            const threshold = 80;
             let isPulling = false;
 
             const cctvList = document.getElementById('cctvList');
             
             cctvList.addEventListener('touchstart', function(e) {
-                if (cctvList.scrollTop === 0) {
+                if (cctvList.scrollTop === 0 && authToken) {
                     startY = e.touches[0].clientY;
                     isPulling = true;
                 }
-            });
+            }, {passive: true});
 
             cctvList.addEventListener('touchmove', function(e) {
                 if (isPulling && cctvList.scrollTop === 0) {
@@ -2024,7 +2149,7 @@
                         }
                     }
                 }
-            });
+            }, {passive: true});
 
             cctvList.addEventListener('touchend', function() {
                 if (isPulling && pullDistance > threshold) {
@@ -2035,10 +2160,10 @@
                 cctvList.style.background = '';
                 isPulling = false;
                 pullDistance = 0;
-            });
+            }, {passive: true});
         }
 
-        // Stream status checker with mobile optimization
+        // Stream status checker
         async function checkStreamStatus() {
             if (!authToken || !currentUser || currentUser.role !== 'admin') return;
             if (document.hidden) return; // Don't check when app is in background
@@ -2046,8 +2171,8 @@
             const onlineCctvs = cctvData.filter(cctv => cctv.status === 'online' && cctv.streamUrl);
             let updates = 0;
 
-            // Check only a few streams at a time to avoid overloading mobile network
-            const batchSize = 3;
+            // Check only a few streams at a time to avoid overloading
+            const batchSize = 2;
             for (let i = 0; i < onlineCctvs.length; i += batchSize) {
                 const batch = onlineCctvs.slice(i, i + batchSize);
                 
@@ -2055,7 +2180,7 @@
                     try {
                         const response = await fetch(cctv.streamUrl, { 
                             method: 'HEAD',
-                            signal: AbortSignal.timeout(5000) // 5 second timeout
+                            signal: AbortSignal.timeout(5000)
                         });
                         const newStatus = response.ok ? 'online' : 'offline';
                         
@@ -2065,7 +2190,6 @@
                             updates++;
                         }
                     } catch (error) {
-                        // Keep current status on error
                         console.log(`Stream check failed for ${cctv.name}:`, error.message);
                     }
                 }));
@@ -2081,64 +2205,32 @@
             }
         }
 
-        // Check stream status every 10 minutes (less frequent for mobile)
-        setInterval(checkStreamStatus, 600000);
+        // Check stream status every 15 minutes
+        setInterval(checkStreamStatus, 900000);
 
-        // Initialize everything when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if device is mobile
-            const isMobile = window.innerWidth < 768;
-            
-            if (isMobile) {
-                // Expand sidebar by default on first load for mobile
-                setTimeout(() => {
-                    if (!sidebarExpanded) {
-                        toggleSidebar();
-                        // Welcome message for mobile users
-                        setTimeout(() => {
-                            showNotification('👆 Tap ☰ untuk buka/tutup menu', 'info');
-                        }, 2000);
-                    }
-                }, 1000);
-            } else {
-                // Auto-expand sidebar on desktop
-                document.getElementById('sidebarContent').classList.add('expanded');
-                sidebarExpanded = true;
-            }
-
-            // Optimize for mobile devices
-            optimizeForMobile();
-
-            // Welcome message
-            setTimeout(() => {
-                if (!authToken) {
-                    showNotification('🏙️ Selamat datang di CCTV Monitoring Banda Aceh! Login untuk akses penuh.', 'info');
-                } else {
-                    showNotification(`🏙️ Selamat datang kembali${currentUser ? ', ' + currentUser.name : ''}!`, 'info');
-                }
-            }, 3000);
-        });
-
-        // Handle visibility change to pause background tasks
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                // App is in background, pause video if playing
-                const video = document.getElementById('videoPlayer');
-                if (video && !video.paused) {
-                    video.pause();
-                }
-            }
-        });
-
-        // Add service worker for PWA capabilities (mobile optimization)
+        // Service Worker for PWA capabilities
         if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
             navigator.serviceWorker.register('/sw.js')
                 .then(() => console.log('Service Worker registered'))
                 .catch(err => console.log('Service Worker registration failed'));
         }
 
-        // Performance logging
-        function logPerformance() {
+        // Cleanup function
+        window.addEventListener('beforeunload', function() {
+            // Cleanup video resources
+            const video = document.getElementById('videoPlayer');
+            if (video && video.hlsInstance) {
+                video.hlsInstance.destroy();
+            }
+            
+            // Clear timers
+            if (typeof searchTimeout !== 'undefined') {
+                clearTimeout(searchTimeout);
+            }
+        });
+
+        // Initialize performance monitoring
+        setTimeout(() => {
             const stats = {
                 totalCCTV: cctvData.length,
                 onlineCCTV: cctvData.filter(c => c.status === 'online').length,
@@ -2150,32 +2242,7 @@
             };
 
             console.log('📊 CCTV System Stats:', stats);
-            
-            // Performance monitoring for mobile
-            if (performance.mark) {
-                performance.mark('app-loaded');
-                performance.measure('app-load-time', 'navigationStart', 'app-loaded');
-                
-                const measures = performance.getEntriesByType('measure');
-                measures.forEach(measure => {
-                    console.log(`⏱️ ${measure.name}: ${measure.duration.toFixed(2)}ms`);
-                });
-            }
-        }
-
-        setTimeout(logPerformance, 5000);
-
-        // Cleanup function for better memory management
-        window.addEventListener('beforeunload', function() {
-            // Cleanup video resources
-            const video = document.getElementById('videoPlayer');
-            if (video && video.hlsInstance) {
-                video.hlsInstance.destroy();
-            }
-            
-            // Clear timers
-            clearTimeout(searchTimeout);
-        });
+        }, 5000);
     </script>
 </body>
 </html>
